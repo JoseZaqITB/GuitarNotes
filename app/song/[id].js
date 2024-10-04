@@ -6,7 +6,7 @@ import songList from "../../data/songs.json";
 import MyText from "../../components/MyText";
 import FloatingButton from "../../components/FloatingButton";
 import React, { useEffect, useRef, useState } from "react";
-import ConfigModal from "../ConfigModal";
+import ConfigModal from "../../components/ConfigModal";
 import { colors, defaultStyles } from "../../style/defaultStyles";
 
 export default function SongView() {
