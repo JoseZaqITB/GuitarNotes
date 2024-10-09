@@ -2,8 +2,9 @@ import { Animated, Image, ScrollView, StyleSheet, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import confIcon from "../../assets/conf.png";
 import arrowIcon from "../../assets/arrow.png";
-import songList from "../../data/songs.json";
 import MyText from "../../components/MyText";
+import * as fs from "expo-file-system";
+
 import FloatingButton from "../../components/FloatingButton";
 import React, { useEffect, useRef, useState } from "react";
 import ConfigModal from "../../components/ConfigModal";
@@ -11,27 +12,23 @@ import { colors, defaultStyles } from "../../style/defaultStyles";
 
 export default function SongView() {
   // vars
-  const { id } = useLocalSearchParams();
-  const title = id.split("-")[0];
-  const artist = id.split("-")[1];
   const ref = React.useRef(0);
-  const lyrics = songList.find(
-    (song) => song.title === title && song.artist === artist,
-  ).lyrics;
-  // use states
+  const { id } = useLocalSearchParams();
+  const titleAndAuthor = id.split("-");
+  const [song, setSong] = useState("");
+  // use states for scrolling
+  const scrollY = useRef(new Animated.Value(0)).current; // Animated value for Y-axis
   const [showConfigMenu, setShowConfigMenu] = React.useState(false);
   const [scrollHeight, setScrollHeight] = useState(480);
   const [autoscroll, setAutoscroll] = useState(false);
   const [scrollAnimation, setScrollAnimation] = useState(undefined);
-  const scrollY = useRef(new Animated.Value(0)).current; // Animated value for Y-axis
-  // functions
+  // functions for scrolling
   const handleAutoscrollButton = () => {
     setAutoscroll(!autoscroll);
   };
   const handleConfigButton = () => {
     setShowConfigMenu(!showConfigMenu);
   };
-
   const handleAnimatedScroll = () => {
     if (scrollAnimation === undefined) {
       // crear objeto de animation
@@ -73,6 +70,13 @@ export default function SongView() {
     else finishAutoScroll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoscroll]);
+  // initialize song
+  useEffect(() => {
+    getsong(titleAndAuthor[0], titleAndAuthor[1]).then((value) =>
+      setSong(value),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -92,12 +96,10 @@ export default function SongView() {
         onLayout={handleLayout}
       >
         <View style={styles.headerContainer}>
-          <MyText style={styles.headerText}>{title}</MyText>
-          <MyText>{artist}</MyText>
+          <MyText style={styles.headerText}>{song?.title}</MyText>
+          <MyText>{song?.artist}</MyText>
         </View>
-        <MyText style={styles.lyricText}>
-          {lyrics.replace(/\,/g, ",\n").replace(/\.\s*/g, ".\n\n")}
-        </MyText>
+        <MyText style={styles.lyricText}>{formatLyrics(song?.lyrics)}</MyText>
       </ScrollView>
 
       <FloatingButton
@@ -133,3 +135,22 @@ const styles = StyleSheet.create({
     margin: 8,
   },
 });
+
+// functions
+async function getListSong() {
+  const songJsonFile = fs.documentDirectory + "songs.json";
+  return await fs
+    .readAsStringAsync(songJsonFile)
+    .then((value) => JSON.parse(value));
+}
+async function getsong(title, author) {
+  return await getListSong().then((value) =>
+    value.find((song) => song.title === title && song.artist === author),
+  );
+}
+
+function formatLyrics(lyrics) {
+  const regexforCommas = /\,/g;
+  const regexforDots = /\.\s*/g;
+  return lyrics?.replace(regexforCommas, ",\n").replace(regexforDots, ".\n\n");
+}

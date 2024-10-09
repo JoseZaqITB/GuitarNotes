@@ -1,5 +1,5 @@
 import { Image, Pressable, View } from "react-native";
-import MyText from "../components/MyText";
+import MyText from "./MyText";
 import penIcon from "../assets/pen.png";
 import Slider from "@react-native-community/slider";
 import { Link } from "expo-router";

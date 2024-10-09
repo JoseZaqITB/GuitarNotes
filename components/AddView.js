@@ -3,8 +3,11 @@ import createImg from "../assets/create.png";
 import importImg from "../assets/import.png";
 import { Link } from "expo-router";
 import { defaultStyles } from "../style/defaultStyles";
+import { useState } from "react";
+import ImportView from "./ImportView";
 
 export default function AddView() {
+  const [showImport, setShowImport] = useState(false);
   return (
     <View style={styles.mainContainer}>
       <Link href="/CreateView" asChild>
@@ -13,10 +16,7 @@ export default function AddView() {
           <Text style={title}>Create</Text>
         </Pressable>
       </Link>
-      <Pressable>
-        <Image source={importImg} style={styles.image} />
-        <Text style={title}>import</Text>
-      </Pressable>
+      <ImportView />
     </View>
   );
 }
