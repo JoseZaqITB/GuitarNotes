@@ -5,7 +5,7 @@ import MyText from "../../components/MyText";
 import SongEditView from "../../components/SongEditView";
 import { colors, defaultStyles } from "../../style/defaultStyles";
 import { useEffect, useState } from "react";
-import useSongList from "../../hooks/useSongList";
+import useSongList from "../../hooks/songList";
 import { useLocalSearchParams } from "expo-router";
 
 function CustomInput({ name }) {

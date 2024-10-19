@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import * as fs from "expo-file-system";
 
 export const songListFileName = "songs.json";
+const songListURI = `${fs.documentDirectory}${songListFileName}`;
 
 const useSongList = () => {
   const [data, setData] = useState(null);
@@ -34,11 +35,14 @@ const useSongList = () => {
   return { data, error, loading, findSong };
 };
 
-async function GetListSongAsync() {
-  const fileURI = `${fs.documentDirectory}${songListFileName}`;
+export async function GetListSongAsync() {
   return fs
-    .readAsStringAsync(fileURI)
+    .readAsStringAsync(songListURI)
     .then((fileContent) => JSON.parse(fileContent));
+}
+export async function WriteSongListAsync(newSongList) {
+  //write to file
+  return fs.writeAsStringAsync(songListURI, JSON.stringify(newSongList));
 }
 
 export default useSongList;
