@@ -10,7 +10,7 @@ export default function AddView() {
   const [showImport, setShowImport] = useState(false);
   return (
     <View style={styles.mainContainer}>
-      <Link href="/CreateView" asChild>
+      <Link href="/add/CreateView" asChild>
         <Pressable>
           <Image source={createImg} style={styles.image} />
           <Text style={title}>Create</Text>

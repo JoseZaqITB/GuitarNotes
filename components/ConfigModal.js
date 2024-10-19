@@ -30,7 +30,7 @@ export default function ConfigModal() {
       </View>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <MyText>Edit Song </MyText>
-        <Link href={"/CreateView"} asChild>
+        <Link href={"/add/CreateView"} asChild>
           <Pressable>
             <Image source={penIcon} width={18} height={18} />
           </Pressable>

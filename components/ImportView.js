@@ -12,7 +12,7 @@ export default function ImportView() {
     DocumentPicker.getDocumentAsync()
       .then((document) => FileSystem.readAsStringAsync(document.assets[0].uri))
       .then((newTextSong) => AddTemporarySongToList(songListURI, newTextSong))
-      .then((tempSong) => GoToSongView(tempSong.title, tempSong.artist));
+      .then((tempSong) => GoToUpdateSongView(tempSong.title, tempSong.artist));
   };
 
   return (
@@ -43,7 +43,6 @@ async function AddTemporarySongToList(songListURI, newSong) {
   const artist = title;
   // verify if temp-song already exists
   const indexSong = jsonFile.findIndex((song) => song.title === title);
-  console.log(indexSong);
   if (indexSong < 0) {
     const _newSong = { title: title, artist: artist, lyrics: newSong };
     const _newJsonFile = [...jsonFile, _newSong];
@@ -55,8 +54,8 @@ async function AddTemporarySongToList(songListURI, newSong) {
     return jsonFile[indexSong];
   }
 }
-const GoToSongView = (title, artist) => {
-  router.push(`/song/${title}-${artist}`);
+const GoToUpdateSongView = (title, artist) => {
+  router.push(`/add/${title}-${artist}`);
 };
 const RewriteJsonFileAsync = async (uri, newSongList) => {
   //write to file

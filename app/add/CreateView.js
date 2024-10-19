@@ -4,6 +4,7 @@ import MyText from "../../components/MyText";
 
 import SongEditView from "../../components/SongEditView";
 import { colors, defaultStyles } from "../../style/defaultStyles";
+import { useEffect } from "react";
 
 function CustomInput({ name }) {
   return (
@@ -29,10 +30,12 @@ function Metadata() {
 }
 
 export default function CreateView() {
+  //use effects
+
   return (
     <PagerView initialPage={0} style={{ flex: 1 }}>
       <Metadata />
-      <SongEditView />
+      <SongEditView lyrics={null} />
     </PagerView>
   );
 }

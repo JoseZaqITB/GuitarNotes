@@ -5,7 +5,7 @@ import React from "react";
 import MyText from "../components/MyText";
 import { defaultStyles } from "../style/defaultStyles";
 
-export default function SongEditView() {
+export default function SongEditView({ lyrics }) {
   const [isLyricsEditState, setIsLyricsEditState] = React.useState(false);
   const [showAllChords, setShowAllChords] = React.useState(false);
   const [currentChord, setcurrentChord] = React.useState(false);
@@ -76,7 +76,7 @@ export default function SongEditView() {
         </View>
       )}
       <View style={{ flex: 0.9 }}>
-        <MyText>Hi again</MyText>
+        <MyText>{lyrics}</MyText>
       </View>
     </View>
   );
