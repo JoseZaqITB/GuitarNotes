@@ -41,14 +41,16 @@ async function AddTemporarySongToList(newSong) {
   const artist = title;
   // verify if temp-song already exists
   const _newSong = { title: title, artist: artist, lyrics: newSong };
+  let _newJsonFile = [...listSong, _newSong];
   const indexSong = listSong.findIndex((song) => song.title === title);
   if (indexSong < 0) {
-    const _newJsonFile = [...listSong, _newSong];
-    await WriteSongListAsync(JSON.stringify(_newJsonFile));
+    await WriteSongListAsync(_newJsonFile);
     return _newSong;
   } else {
-    listSong.map((song, index) => index === indexSong && _newSong);
-    await WriteSongListAsync(listSong);
+    _newJsonFile = listSong.map((song, index) =>
+      index === indexSong ? _newSong : song,
+    );
+    await WriteSongListAsync(_newJsonFile);
     return listSong[indexSong];
   }
 }

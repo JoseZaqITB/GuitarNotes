@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import * as fs from "expo-file-system";
+import jsonFile from "../data/songs.json"; // just use it for createJsonFIle function
 
 export const songListFileName = "songs.json";
 const songListURI = `${fs.documentDirectory}${songListFileName}`;
@@ -15,6 +16,7 @@ const useSongList = () => {
         const listSong = await GetListSongAsync();
         setData(listSong);
       } catch (err) {
+        console.log(err);
         setError(err);
       } finally {
         setLoading(false);
@@ -25,10 +27,11 @@ const useSongList = () => {
   }, []);
   // functions
   async function findSong(title, author) {
-    if (data)
+    if (data) {
       return data.find(
         (song) => song.title === title && song.artist === author,
       );
+    }
     return null;
   }
 
@@ -43,6 +46,14 @@ export async function GetListSongAsync() {
 export async function WriteSongListAsync(newSongList) {
   //write to file
   return fs.writeAsStringAsync(songListURI, JSON.stringify(newSongList));
+}
+
+export async function CreateDefaultSongList() {
+  const dirInfo = await fs.getInfoAsync(songListURI);
+  if (!dirInfo.exists)
+    return WriteSongListAsync(jsonFile).catch((e) => console.log(e));
+  console.log("already created");
+  return null;
 }
 
 export default useSongList;

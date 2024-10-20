@@ -9,11 +9,13 @@ import FloatingButton from "../../components/FloatingButton";
 import React, { useEffect, useRef, useState } from "react";
 import ConfigModal from "../../components/ConfigModal";
 import { colors, defaultStyles } from "../../style/defaultStyles";
+import useSongList from "../../hooks/songList";
 
 export default function SongView() {
   // vars
   const ref = React.useRef(0);
   const { id } = useLocalSearchParams();
+  const songList = useSongList();
   const titleAndAuthor = id.split("-");
   const [song, setSong] = useState("");
   // use states for scrolling
@@ -72,11 +74,12 @@ export default function SongView() {
   }, [autoscroll]);
   // initialize song
   useEffect(() => {
-    getsong(titleAndAuthor[0], titleAndAuthor[1]).then((value) =>
-      setSong(value),
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (songList.data) {
+      songList
+        .findSong(titleAndAuthor[0], titleAndAuthor[1])
+        .then((song) => setSong(song));
+    }
+  }, [songList, titleAndAuthor]);
 
   return (
     <>
