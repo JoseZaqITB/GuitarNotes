@@ -4,7 +4,7 @@ import penIcon from "../assets/pen.png";
 import Slider from "@react-native-community/slider";
 import { Link } from "expo-router";
 
-export default function ConfigModal() {
+export default function ConfigModal({ title, author }) {
   return (
     <View
       style={{
@@ -30,7 +30,7 @@ export default function ConfigModal() {
       </View>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <MyText>Edit Song </MyText>
-        <Link href={"/add/CreateView"} asChild>
+        <Link href={`/add/${title}-${author}`} asChild>
           <Pressable>
             <Image source={penIcon} width={18} height={18} />
           </Pressable>

@@ -117,7 +117,9 @@ export default function SongView() {
       >
         <Image source={arrowIcon} />
       </FloatingButton>
-      {showConfigMenu && <ConfigModal />}
+      {showConfigMenu && (
+        <ConfigModal title={titleAndAuthor[0]} author={titleAndAuthor[1]} />
+      )}
     </>
   );
 }
@@ -140,18 +142,6 @@ const styles = StyleSheet.create({
 });
 
 // functions
-async function getListSong() {
-  const songJsonFile = fs.documentDirectory + "songs.json";
-  return await fs
-    .readAsStringAsync(songJsonFile)
-    .then((value) => JSON.parse(value));
-}
-async function getsong(title, author) {
-  return await getListSong().then((value) =>
-    value.find((song) => song.title === title && song.artist === author),
-  );
-}
-
 function formatLyrics(lyrics) {
   const regexforCommas = /\,/g;
   const regexforDots = /\.\s*/g;

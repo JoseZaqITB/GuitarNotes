@@ -7,29 +7,7 @@ import { colors, defaultStyles } from "../../style/defaultStyles";
 import { useEffect, useState } from "react";
 import useSongList from "../../hooks/songList";
 import { useLocalSearchParams } from "expo-router";
-
-function CustomInput({ name }) {
-  return (
-    <View style={styles.inputContainer}>
-      <MyText style={title}>{name}</MyText>
-      <TextInput
-        placeholder="My best Song"
-        placeholderTextColor={colors.light.textSecondary}
-        style={styles.text}
-      />
-    </View>
-  );
-}
-
-function Metadata() {
-  return (
-    <View style={styles.mainContainer}>
-      <CustomInput name={"Title"} />
-      <CustomInput name={"Author"} />
-      <CustomInput name={"Tag"} />
-    </View>
-  );
-}
+import SongInfo from "../../components/SongInfo";
 
 export default function UpdateSongView() {
   // vars
@@ -46,34 +24,8 @@ export default function UpdateSongView() {
   // return view
   return (
     <PagerView initialPage={0} style={{ flex: 1 }}>
-      <Metadata />
+      <SongInfo title={titleAndAuthor[0]} author={titleAndAuthor[1]} tag={""} />
       <SongEditView lyrics={song?.lyrics} />
     </PagerView>
   );
 }
-
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    justifyContent: "center",
-    marginBottom: 64, // adjust center problem because of the header height
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.light.textPrimary,
-    margin: 16,
-  },
-  text: {
-    ...defaultStyles.text,
-    color: colors.light.textPrimary,
-    margin: 4,
-  },
-  title: {
-    fontWeight: "bold",
-    ...defaultStyles.title,
-  },
-});
-
-const title = StyleSheet.compose(styles.text, styles.title);

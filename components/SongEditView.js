@@ -84,7 +84,12 @@ export default function SongEditView({ lyrics }) {
         </View>
       )}
       <ScrollView style={styles.lyricsContainer}>
-        <TextInput defaultValue={lyrics} style={styles.textInput} multiline />
+        <TextInput
+          defaultValue={lyrics}
+          placeholder="A full soul with an empty song..."
+          style={styles.textInput}
+          multiline
+        />
       </ScrollView>
     </View>
   );
@@ -124,10 +129,12 @@ const styles = StyleSheet.create({
   },
   lyricsContainer: {
     flex: 0.9,
-    padding: 8,
+    paddingHorizontal: 8,
   },
   textInput: {
     ...defaultStyles.middleText,
     color: colors.light.textPrimary,
+    textAlignVertical: "top",
+    minHeight: "100%", // right?. when no text, text keeps in size of container
   },
 });
