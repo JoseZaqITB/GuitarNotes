@@ -4,7 +4,12 @@ import penIcon from "../assets/pen.png";
 import Slider from "@react-native-community/slider";
 import { Link } from "expo-router";
 
-export default function ConfigModal({ title, author }) {
+export default function ConfigModal({
+  title,
+  author,
+  scrollDuration,
+  setScrollDuration,
+}) {
   return (
     <View
       style={{
@@ -37,15 +42,30 @@ export default function ConfigModal({ title, author }) {
         </Link>
       </View>
       <View style={{}}>
-        <MyText>Autoscroll speed </MyText>
+        <View>
+          <MyText>Autoscroll speed </MyText>
+          <MyText>{GetMinFromMil(scrollDuration)}</MyText>
+        </View>
         <Slider
           style={{ width: 200, height: 40 }}
-          minimumValue={0}
-          maximumValue={1}
+          step={1}
+          value={scrollDuration}
+          minimumValue={1000} // milliseconds
+          maximumValue={1000 * 60 * 8} // millisecons * seconds * minutes
           minimumTrackTintColor="#FFFFFF"
           maximumTrackTintColor="#000000"
+          onValueChange={(value) => setScrollDuration(value)}
         />
       </View>
     </View>
   );
+}
+
+// functions
+function GetMinFromMil(miliseconds) {
+  const total_seconds = Math.floor(miliseconds / 1000);
+  const total_minutes = Math.floor(total_seconds / 60);
+  const seconds = total_seconds % 60;
+  const minutes = total_minutes % 60;
+  return `${minutes}:${seconds < 10 ? 0 : ""}${seconds}`;
 }

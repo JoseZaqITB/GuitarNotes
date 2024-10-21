@@ -22,6 +22,7 @@ export default function SongView() {
   const [scrollHeight, setScrollHeight] = useState(480);
   const [autoscroll, setAutoscroll] = useState(false);
   const [scrollAnimation, setScrollAnimation] = useState(undefined);
+  const [scrollDuration, setScrollDuration] = useState(1000);
   // functions for scrolling
   const handleAutoscrollButton = () => {
     setAutoscroll(!autoscroll);
@@ -34,7 +35,7 @@ export default function SongView() {
       // crear objeto de animation
       const animatedScroll = Animated.timing(scrollY, {
         toValue: scrollHeight, // Target scroll position
-        duration: 10000, // Duration in milliseconds
+        duration: scrollDuration, // Duration in milliseconds
         useNativeDriver: true, // Optimize performance
       });
       // empezar animation de scroll
@@ -116,7 +117,12 @@ export default function SongView() {
         <Image source={arrowIcon} />
       </FloatingButton>
       {showConfigMenu && (
-        <ConfigModal title={titleAndAuthor[0]} author={titleAndAuthor[1]} />
+        <ConfigModal
+          title={titleAndAuthor[0]}
+          author={titleAndAuthor[1]}
+          scrollDuration={scrollDuration}
+          setScrollDuration={setScrollDuration}
+        />
       )}
     </>
   );
