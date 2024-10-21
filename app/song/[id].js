@@ -3,8 +3,6 @@ import { useLocalSearchParams } from "expo-router";
 import confIcon from "../../assets/conf.png";
 import arrowIcon from "../../assets/arrow.png";
 import MyText from "../../components/MyText";
-import * as fs from "expo-file-system";
-
 import FloatingButton from "../../components/FloatingButton";
 import React, { useEffect, useRef, useState } from "react";
 import ConfigModal from "../../components/ConfigModal";
