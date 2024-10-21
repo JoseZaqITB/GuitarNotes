@@ -1,9 +1,17 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import ChordImage from "../assets/chord.png";
 import PenImage from "../assets/pen.png";
 import React from "react";
 import MyText from "../components/MyText";
-import { defaultStyles } from "../style/defaultStyles";
+import { colors, defaultStyles } from "../style/defaultStyles";
 
 export default function SongEditView({ lyrics }) {
   const [isLyricsEditState, setIsLyricsEditState] = React.useState(false);
@@ -75,9 +83,9 @@ export default function SongEditView({ lyrics }) {
           </Pressable>
         </View>
       )}
-      <View style={{ flex: 0.9 }}>
-        <MyText>{lyrics}</MyText>
-      </View>
+      <ScrollView style={styles.lyricsContainer}>
+        <TextInput defaultValue={lyrics} style={styles.textInput} multiline />
+      </ScrollView>
     </View>
   );
 }
@@ -113,5 +121,13 @@ const styles = StyleSheet.create({
     alignContent: "center",
 
     maxHeight: buttonSize * 6,
+  },
+  lyricsContainer: {
+    flex: 0.9,
+    padding: 8,
+  },
+  textInput: {
+    ...defaultStyles.middleText,
+    color: colors.light.textPrimary,
   },
 });
