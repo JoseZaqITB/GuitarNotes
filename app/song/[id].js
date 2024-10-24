@@ -11,7 +11,7 @@ import useSongList from "../../hooks/songList";
 
 export default function SongView() {
   // vars
-  const ref = React.useRef(0);
+  const scrollViewRef = React.useRef(0);
   const { id } = useLocalSearchParams();
   const songList = useSongList();
   const titleAndAuthor = id.split("-");
@@ -22,7 +22,7 @@ export default function SongView() {
   const [scrollHeight, setScrollHeight] = useState(480);
   const [autoscroll, setAutoscroll] = useState(false);
   const [scrollAnimation, setScrollAnimation] = useState(undefined);
-  const [scrollDuration, setScrollDuration] = useState(1000);
+  const [scrollDuration, setScrollDuration] = useState(50000);
   // functions for scrolling
   const handleAutoscrollButton = () => {
     setAutoscroll(!autoscroll);
@@ -47,7 +47,7 @@ export default function SongView() {
 
       setScrollAnimation(animatedScroll);
       scrollY.addListener(({ value }) => {
-        ref.current.scrollTo({ y: value, animated: false });
+        scrollViewRef.current.scrollTo({ y: value, animated: false });
       });
     } else {
       finishAutoScroll();
@@ -79,11 +79,18 @@ export default function SongView() {
         .then((song) => setSong(song));
     }
   }, [songList, titleAndAuthor]);
+  useEffect(() => {
+    // when unomunts clean all listeners
+    return () => {
+      finishAutoScroll();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
       <ScrollView
-        ref={ref}
+        ref={scrollViewRef}
         onScroll={(event) => {
           if (scrollAnimation === undefined) {
             scrollY.setValue(event.nativeEvent.contentOffset.y);

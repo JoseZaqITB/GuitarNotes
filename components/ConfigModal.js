@@ -67,5 +67,5 @@ function GetMinFromMil(miliseconds) {
   const total_minutes = Math.floor(total_seconds / 60);
   const seconds = total_seconds % 60;
   const minutes = total_minutes % 60;
-  return `${minutes}:${seconds < 10 ? 0 : ""}${seconds}`;
+  return `${minutes}:${seconds < 10 ? 0 : ""}${seconds}`; // could be more simplified
 }
