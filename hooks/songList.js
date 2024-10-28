@@ -6,7 +6,7 @@ export const songListFileName = "songs.json";
 const songListURI = `${fs.documentDirectory}${songListFileName}`;
 
 const useSongList = () => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 

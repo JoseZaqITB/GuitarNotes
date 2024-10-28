@@ -1,12 +1,13 @@
 import ListItem from "./ListItem";
-import dataJson from "../data/songs.json";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
+import useSongList, { GetListSongAsync } from "../hooks/songList";
 
 export default function ListView({ gap }) {
+  const songList = useSongList();
   return (
     <ScrollView style={styles.scrollContainer}>
-      {dataJson.map((song, index) => (
+      {songList.data.map((song, index) => (
         <Fragment key={`empty wrapper ${song.title} ${song.artist} ${index}`}>
           <ListItem
             title={song.title}
