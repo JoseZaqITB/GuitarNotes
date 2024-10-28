@@ -55,5 +55,20 @@ export async function CreateDefaultSongList() {
   console.log("already created");
   return null;
 }
+// create an empty songList
+function createEmptySongList() {
+  const songList = [];
+  return WriteSongListAsync(songList);
+}
+// add list
+export async function AddSongAsync(title, artist, lyrics, tag) {
+  const newSong = { title, artist, lyrics, tag };
+  const songList = await GetListSongAsync();
+  if (!songList) {
+    console.log("olito : " + songList);
+    createEmptySongList().catch((e) => alert(e));
+  }
+  return WriteSongListAsync([...songList, newSong]);
+}
 
 export default useSongList;
