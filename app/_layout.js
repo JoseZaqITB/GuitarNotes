@@ -33,7 +33,11 @@ export default function MainLayout() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <StatusBar style="auto" backgroundColor={colors.light.primary} />
+      <StatusBar
+        style="auto"
+        backgroundColor={colors.light.primary}
+        translucent
+      />
       <Stack
         screenOptions={{
           headerStyle: {
