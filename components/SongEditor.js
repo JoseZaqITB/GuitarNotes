@@ -12,7 +12,7 @@ import {
 // main
 import PagerView from "react-native-pager-view";
 import saveIcon from "../assets/saveIcon.png";
-import { useNavigation } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { AddSongAsync } from "../hooks/songList";
 import LabelInput from "./LabelInput";
@@ -42,11 +42,12 @@ export default function SongEditor(song) {
     if (!tag.trim()) {
       setTag("Unknown");
     }
+    // capitalize title, artist, and tag // TODO
     // save the song and show errors
     AddSongAsync(title, artist, lyrics, tag)
-      .then((song) => {
-        console.log(song);
-        alert("New Song Added!");
+      .then(() => {
+        alert(`New Song Added!\n${title}\n${artist}`);
+        router.push("/", { relativeToDirectory: false });
       })
       .catch((err) => alert(err));
   };

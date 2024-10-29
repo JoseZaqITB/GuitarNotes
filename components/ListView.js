@@ -1,7 +1,7 @@
 import ListItem from "./ListItem";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Fragment, useEffect, useState } from "react";
-import useSongList, { GetListSongAsync } from "../hooks/songList";
+import { Fragment } from "react";
+import useSongList from "../hooks/songList";
 
 export default function ListView({ gap }) {
   const songList = useSongList();

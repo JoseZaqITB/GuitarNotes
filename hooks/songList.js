@@ -12,15 +12,16 @@ const useSongList = () => {
 
   useEffect(() => {
     const readFile = async () => {
+      let listSong = [];
       try {
-        const listSong = await GetListSongAsync();
-        setData(listSong);
+        listSong = await GetListSongAsync();
       } catch (err) {
         console.log(err);
         setError(err);
       } finally {
         setLoading(false);
       }
+      setData(listSong);
     };
 
     readFile();
