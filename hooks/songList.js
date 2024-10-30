@@ -39,14 +39,27 @@ const useSongList = () => {
   return { data, error, loading, findSong };
 };
 
+//methods
+/*Create  random id for a song */
+function CreateRandomId(title) {
+  return Math.random().toString(36).substr(2, 9).concat(title);
+}
+
 export async function GetListSongAsync() {
   return fs
     .readAsStringAsync(songListURI)
     .then((fileContent) => JSON.parse(fileContent));
 }
 export async function WriteSongListAsync(newSongList) {
+  // verify if each object has id, title, artist, lyrics and tag keys
+  const keys = ["id", "title", "artist", "lyrics", "tag"];
+  const hasAllKeys = newSongList.every((song) =>
+    keys.every((key) => key in song),
+  );
   //write to file
-  return fs.writeAsStringAsync(songListURI, JSON.stringify(newSongList));
+  if (hasAllKeys)
+    return fs.writeAsStringAsync(songListURI, JSON.stringify(newSongList));
+  else throw new Error("missing keys in object");
 }
 
 export async function CreateDefaultSongList() {
@@ -63,7 +76,7 @@ function createEmptySongList() {
 }
 // add list
 export async function AddSongAsync(title, artist, lyrics, tag) {
-  const newSong = { title, artist, lyrics, tag };
+  const newSong = { id: CreateRandomId(title), title, artist, lyrics, tag };
   const songList = await GetListSongAsync();
   if (!songList) {
     createEmptySongList().catch((e) => alert(e));
@@ -73,7 +86,7 @@ export async function AddSongAsync(title, artist, lyrics, tag) {
 }
 
 export async function UpdateSongAsync(index, title, artist, lyrics, tag) {
-  const newSong = { title, artist, lyrics, tag };
+  const newSong = { id: CreateRandomId(title), title, artist, lyrics, tag };
   const songList = await GetListSongAsync();
   const _newJsonFile = songList.map((song, _index) =>
     _index === index ? newSong : song,
