@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import { AddSongAsync } from "../hooks/songList";
 import LabelInput from "./LabelInput";
 
-export default function SongEditor({ song }) {
+export default function SongEditor({ song = {} }) {
   // add save button
   const navigation = useNavigation();
   const [title, setTitle] = useState(song.title || "");
