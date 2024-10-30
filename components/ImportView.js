@@ -5,7 +5,12 @@ import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { defaultStyles } from "../style/defaultStyles";
 import { router } from "expo-router";
-import { WriteSongListAsync, GetListSongAsync } from "../hooks/songList";
+import {
+  WriteSongListAsync,
+  GetListSongAsync,
+  AddSongAsync,
+  UpdateSongAsync,
+} from "../hooks/songList";
 
 export default function ImportView() {
   const handlePicking = () => {
@@ -35,23 +40,18 @@ const styles = StyleSheet.create({
 
 const title = StyleSheet.compose(styles.text, defaultStyles.title);
 // functions
-async function AddTemporarySongToList(newSong) {
+async function AddTemporarySongToList(lyrics) {
   const listSong = await GetListSongAsync();
   const title = "temp";
   const artist = title;
+  const tag = title;
   // verify if temp-song already exists
-  const _newSong = { title: title, artist: artist, lyrics: newSong };
-  let _newJsonFile = [...listSong, _newSong];
   const indexSong = listSong.findIndex((song) => song.title === title);
+  // save song in songList store
   if (indexSong < 0) {
-    await WriteSongListAsync(_newJsonFile);
-    return _newSong;
+    return AddSongAsync(title, artist, lyrics, tag);
   } else {
-    _newJsonFile = listSong.map((song, index) =>
-      index === indexSong ? _newSong : song,
-    );
-    await WriteSongListAsync(_newJsonFile);
-    return listSong[indexSong];
+    return UpdateSongAsync(indexSong, title, artist, lyrics, tag);
   }
 }
 const GoToUpdateSongView = (title, artist) => {

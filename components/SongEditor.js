@@ -17,14 +17,13 @@ import { useEffect, useState } from "react";
 import { AddSongAsync } from "../hooks/songList";
 import LabelInput from "./LabelInput";
 
-export default function SongEditor(song) {
+export default function SongEditor({ song }) {
   // add save button
   const navigation = useNavigation();
   const [title, setTitle] = useState(song.title || "");
   const [artist, setArtist] = useState(song.artist || "");
-  const [tag, setTag] = useState(song.Tag || "");
-  const [lyrics, setLyrics] = useState(song.Lyrics || "");
-
+  const [tag, setTag] = useState(song.tag || "");
+  const [lyrics, setLyrics] = useState(song.lyrics || "");
   // set a saveButton to the header and updated each time a state is updated
   useEffect(() => {
     navigation.setOptions({ headerRight: () => <SaveButton /> });

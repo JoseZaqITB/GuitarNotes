@@ -1,27 +1,25 @@
-import PagerView from "react-native-pager-view";
-import SongEditView from "../../components/SongEditView";
 import { useEffect, useState } from "react";
-import useSongList from "../../hooks/songList";
+import { GetListSongAsync } from "../../hooks/songList";
 import { useLocalSearchParams } from "expo-router";
-import SongInfo from "../../components/SongInfo";
-
+import SongEditor from "../../components/SongEditor";
+import { ActivityIndicator } from "react-native";
 export default function UpdateSongView() {
   // vars
   const { songData } = useLocalSearchParams();
-  const titleAndAuthor = songData.split("-");
-  const [song, setSong] = useState();
-  const songList = useSongList();
+  const titleAndArtist = songData.split("-");
+  const [song, setSong] = useState(undefined);
   //use effects
   useEffect(() => {
-    songList.findSong(titleAndAuthor[0], titleAndAuthor[1]).then((song) => {
+    GetListSongAsync().then((songList) => {
+      const song = songList.find(
+        (song) =>
+          song.title === titleAndArtist[0] && song.artist === titleAndArtist[1],
+      );
       setSong(song);
     });
-  }, [songList, titleAndAuthor]);
+  }, [titleAndArtist, setSong]);
+  if (song === undefined)
+    return <ActivityIndicator style={{ flex: 1 }} size="large" />;
   // return view
-  return (
-    <PagerView initialPage={0} style={{ flex: 1 }}>
-      <SongInfo title={titleAndAuthor[0]} author={titleAndAuthor[1]} tag={""} />
-      <SongEditView lyrics={song?.lyrics} />
-    </PagerView>
-  );
+  return <SongEditor song={song} />;
 }

@@ -66,10 +66,20 @@ export async function AddSongAsync(title, artist, lyrics, tag) {
   const newSong = { title, artist, lyrics, tag };
   const songList = await GetListSongAsync();
   if (!songList) {
-    console.log("olito : " + songList);
     createEmptySongList().catch((e) => alert(e));
   }
-  return WriteSongListAsync([...songList, newSong]);
+  WriteSongListAsync([...songList, newSong]);
+  return newSong;
+}
+
+export async function UpdateSongAsync(index, title, artist, lyrics, tag) {
+  const newSong = { title, artist, lyrics, tag };
+  const songList = await GetListSongAsync();
+  const _newJsonFile = songList.map((song, _index) =>
+    _index === index ? newSong : song,
+  );
+  await WriteSongListAsync(_newJsonFile);
+  return newSong;
 }
 
 export default useSongList;
