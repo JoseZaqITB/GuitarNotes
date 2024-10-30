@@ -15,7 +15,7 @@ import saveIcon from "../assets/saveIcon.png";
 import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { AddSongAsync } from "../hooks/songList";
-import LabelInput from "./LabelInput";
+import MyText from "./MyText";
 
 export default function SongEditor({ song = {} }) {
   // add save button
@@ -58,40 +58,43 @@ export default function SongEditor({ song = {} }) {
     );
   };
 
-  // song info
-
-  function SongInfo() {
-    return (
-      <View style={styles.mainContainer}>
-        <LabelInput
-          name={"Title"}
-          defaultValue={title}
-          placeholder={"My best Song"}
-          state={setTitle}
-        />
-        <LabelInput
-          name={"artist"}
-          defaultValue={artist}
-          placeholder={"Mysel-Fish Band"}
-          state={setArtist}
-        />
-        <LabelInput
-          name={"Tag"}
-          defaultValue={tag}
-          placeholder={"Indie"}
-          state={setTag}
-        />
-      </View>
-    );
-  }
-  //
-
   return (
     <PagerView initialPage={0} style={{ flex: 1 }}>
-      <SongInfo />
+      <View style={styles.mainContainer}>
+        <View style={styles.inputContainer}>
+          <MyText style={titleStyle}>Title</MyText>
+          <TextInput
+            value={title}
+            style={styles.customInput}
+            placeholder={"My best Song"}
+            placeholderTextColor={colors.light.textSecondary}
+            onChangeText={setTitle}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <MyText style={titleStyle}>Artist</MyText>
+          <TextInput
+            style={styles.customInput}
+            value={artist}
+            placeholder={"Mysel-Fish Band"}
+            onChangeText={setArtist}
+            placeholderTextColor={colors.light.textSecondary}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <MyText style={titleStyle}>Tag</MyText>
+          <TextInput
+            style={styles.customInput}
+            value={tag}
+            placeholder={"Indie"}
+            onChangeText={setTag}
+            placeholderTextColor={colors.light.textSecondary}
+          />
+        </View>
+      </View>
       <ScrollView style={styles.lyricsContainer}>
         <TextInput
-          defaultValue={lyrics}
+          value={lyrics}
           placeholder="A full fish soul with an empty song..."
           style={styles.textInput}
           onChangeText={setLyrics}
@@ -103,6 +106,19 @@ export default function SongEditor({ song = {} }) {
 }
 
 const styles = StyleSheet.create({
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.light.textPrimary,
+    margin: 16,
+  },
+  customInput: {
+    ...defaultStyles.text,
+    color: colors.light.textPrimary,
+    width: "100%",
+    marginHorizontal: 8,
+  },
   mainContainer: {
     flex: 1,
     justifyContent: "center",
@@ -112,12 +128,6 @@ const styles = StyleSheet.create({
     ...defaultStyles.text,
     color: colors.light.textPrimary,
     margin: 4,
-  },
-  customInput: {
-    ...defaultStyles.text,
-    color: colors.light.textPrimary,
-    width: "100%",
-    marginHorizontal: 8,
   },
   title: {
     fontWeight: "bold",
@@ -134,3 +144,4 @@ const styles = StyleSheet.create({
     minHeight: "100%", // right?. when no text, text keeps in size of container
   },
 });
+const titleStyle = StyleSheet.flatten(styles.title, styles.text);
