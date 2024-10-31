@@ -43,11 +43,11 @@ export default function SongEditor({ song = {} }) {
     }
     // capitalize title, artist, and tag // TODO
     // if is song passed, update the song
-    if (song) {
+    if (song.id) {
       UpdateSongAsync(song.id, title, artist, lyrics, tag)
         .then(() => {
           alert(`Song Updated!\n${title}\n${artist}`);
-          router.push("/", { relativeToDirectory: false });
+          router.navigate("/", { relativeToDirectory: false });
         })
         .catch((err) => alert(err));
     } else {
@@ -55,7 +55,7 @@ export default function SongEditor({ song = {} }) {
       AddSongAsync(title, artist, lyrics, tag)
         .then(() => {
           alert(`New Song Added!\n${title}\n${artist}`);
-          router.push("/", { relativeToDirectory: false });
+          router.navigate("/", { relativeToDirectory: false });
         })
         .catch((err) => alert(err));
     }

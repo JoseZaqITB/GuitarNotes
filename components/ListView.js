@@ -1,13 +1,21 @@
 import ListItem from "./ListItem";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Fragment } from "react";
-import useSongList from "../hooks/songList";
+import { Fragment, useEffect, useState } from "react";
+import { GetListSongAsync } from "../hooks/songList";
 
 export default function ListView({ gap }) {
-  const songList = useSongList();
+  const [songList, setSongList] = useState([]);
+  useEffect(() => {
+    GetListSongAsync()
+      .then((songList) => {
+        const noTempSongList = songList.filter((song) => song.id !== 0);
+        setSongList(noTempSongList);
+      })
+      .catch((error) => console.log(error));
+  }, [setSongList]);
   return (
     <ScrollView style={styles.scrollContainer}>
-      {songList.data.map((song, index) => (
+      {songList.map((song, index) => (
         <Fragment key={`empty wrapper ${song.title} ${song.artist} ${index}`}>
           <ListItem
             title={song.title}
