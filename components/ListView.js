@@ -2,6 +2,7 @@ import ListItem from "./ListItem";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Fragment, useEffect, useState } from "react";
 import { GetListSongAsync } from "../hooks/songList";
+import { useFocusEffect } from "expo-router";
 
 export default function ListView({ gap }) {
   const [songList, setSongList] = useState([]);
@@ -13,6 +14,15 @@ export default function ListView({ gap }) {
       })
       .catch((error) => console.log(error));
   }, [setSongList]);
+  //temp, when is focus re.render the songList
+  useFocusEffect(() => {
+    GetListSongAsync()
+      .then((songList) => {
+        const noTempSongList = songList.filter((song) => song.id !== 0);
+        setSongList(noTempSongList);
+      })
+      .catch((error) => console.log(error));
+  });
   return (
     <ScrollView style={styles.scrollContainer}>
       {songList.map((song, index) => (
