@@ -41,17 +41,13 @@ const styles = StyleSheet.create({
 const title = StyleSheet.compose(styles.text, defaultStyles.title);
 // functions
 async function AddTemporarySongToList(lyrics) {
-  const listSong = await GetListSongAsync();
-  const title = "temp";
-  const artist = title;
-  const tag = title;
-  // verify if temp-song already exists
-  const indexSong = listSong.findIndex((song) => song.title === title);
-  // save song in songList store
-  if (indexSong < 0) {
-    return AddSongAsync(title, artist, lyrics, tag);
-  } else {
-    return UpdateSongAsync(indexSong, title, artist, lyrics, tag);
+  const tempName = "temp";
+  const tempId = 0;
+  // update temp song
+  try {
+    return UpdateSongAsync(tempId, tempName, tempName, lyrics, tempName);
+  } catch {
+    throw new Error("Error trying to update temp song");
   }
 }
 const GoToUpdateSongView = (title, artist) => {

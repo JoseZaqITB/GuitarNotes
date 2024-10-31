@@ -85,11 +85,11 @@ export async function AddSongAsync(title, artist, lyrics, tag) {
   return newSong;
 }
 
-export async function UpdateSongAsync(index, title, artist, lyrics, tag) {
-  const newSong = { id: CreateRandomId(title), title, artist, lyrics, tag };
+export async function UpdateSongAsync(id, title, artist, lyrics, tag) {
+  const newSong = { id, title, artist, lyrics, tag };
   const songList = await GetListSongAsync();
   const _newJsonFile = songList.map((song, _index) =>
-    _index === index ? newSong : song,
+    song.id === id ? newSong : song,
   );
   await WriteSongListAsync(_newJsonFile);
   return newSong;

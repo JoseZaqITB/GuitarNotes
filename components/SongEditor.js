@@ -14,7 +14,7 @@ import PagerView from "react-native-pager-view";
 import saveIcon from "../assets/saveIcon.png";
 import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
-import { AddSongAsync } from "../hooks/songList";
+import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
 import MyText from "./MyText";
 
 export default function SongEditor({ song = {} }) {
@@ -42,13 +42,23 @@ export default function SongEditor({ song = {} }) {
       setTag("Unknown");
     }
     // capitalize title, artist, and tag // TODO
-    // save the song and show errors
-    AddSongAsync(title, artist, lyrics, tag)
-      .then(() => {
-        alert(`New Song Added!\n${title}\n${artist}`);
-        router.push("/", { relativeToDirectory: false });
-      })
-      .catch((err) => alert(err));
+    // if is song passed, update the song
+    if (song) {
+      UpdateSongAsync(song.id, title, artist, lyrics, tag)
+        .then(() => {
+          alert(`Song Updated!\n${title}\n${artist}`);
+          router.push("/", { relativeToDirectory: false });
+        })
+        .catch((err) => alert(err));
+    } else {
+      // save the song and show errors
+      AddSongAsync(title, artist, lyrics, tag)
+        .then(() => {
+          alert(`New Song Added!\n${title}\n${artist}`);
+          router.push("/", { relativeToDirectory: false });
+        })
+        .catch((err) => alert(err));
+    }
   };
   const SaveButton = () => {
     return (

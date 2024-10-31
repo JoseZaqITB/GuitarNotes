@@ -1,5 +1,12 @@
 [
   {
+    "id": 0,
+    "title": "temp",
+    "artist": "temp",
+    "lyrics": "temp",
+    "tag":"temp"
+  },
+  {
     "id": 1,
     "title": "Whispers in the Rain",
     "artist": "Echo Lights",
@@ -69,4 +76,5 @@
     "lyrics": "Under crimson skies, the sun begins to fall. We stand together, rising above it all.",
     "tag":"indie"
   }
+  
 ]
