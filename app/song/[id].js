@@ -19,10 +19,14 @@ export default function SongView() {
   // use states for scrolling
   const scrollY = useRef(new Animated.Value(0)).current; // Animated value for Y-axis
   const [showConfigMenu, setShowConfigMenu] = React.useState(false);
-  const [scrollHeight, setScrollHeight] = useState(480);
+  const [scrollViewHeight, setScrollViewHeight] = useState(480);
+  const [lyricSize, setLyricSize] = useState(320);
   const [autoscroll, setAutoscroll] = useState(false);
   const [scrollAnimation, setScrollAnimation] = useState(undefined);
   const [scrollDuration, setScrollDuration] = useState(50000);
+  // define the distance to scroll
+  const scrollDistance =
+    lyricSize > scrollViewHeight ? lyricSize - scrollViewHeight : lyricSize;
   // functions for scrolling
   const handleAutoscrollButton = () => {
     setAutoscroll(!autoscroll);
@@ -34,7 +38,7 @@ export default function SongView() {
     if (scrollAnimation === undefined) {
       // crear objeto de animation
       const animatedScroll = Animated.timing(scrollY, {
-        toValue: scrollHeight, // Target scroll position
+        toValue: scrollDistance, // Target scroll position
         duration: scrollDuration, // Duration in milliseconds
         useNativeDriver: true, // Optimize performance
       });
@@ -62,7 +66,7 @@ export default function SongView() {
 
   const handleLayout = (event) => {
     const { height } = event.nativeEvent.layout; // Destructure height from the layout
-    setScrollHeight(height); // Store the height in state
+    setScrollViewHeight(height); // Store the height in state
   };
   // use effects
   useEffect(() => {
@@ -80,12 +84,13 @@ export default function SongView() {
     }
   }, [songList, titleAndAuthor]);
   useEffect(() => {
+    // update distance to scroll
     // when unomunts clean all listeners
     return () => {
       finishAutoScroll();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [scrollViewHeight, lyricSize]);
 
   return (
     <>
@@ -103,6 +108,7 @@ export default function SongView() {
           if (autoscroll) handleAnimatedScroll();
         }}
         onLayout={handleLayout}
+        onContentSizeChange={(width, height) => setLyricSize(height)}
       >
         <View style={styles.headerContainer}>
           <MyText style={styles.headerText}>{song?.title}</MyText>
