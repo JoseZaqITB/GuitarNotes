@@ -133,6 +133,7 @@ export default function SongView() {
         <ConfigModal
           title={titleAndAuthor[0]}
           author={titleAndAuthor[1]}
+          id={song.id}
           scrollDuration={scrollDuration}
           setScrollDuration={setScrollDuration}
         />

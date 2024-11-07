@@ -11,7 +11,7 @@ import {
 } from "react-native";
 // main
 import PagerView from "react-native-pager-view";
-import saveIcon from "../assets/saveIcon.png";
+import saveIcon from "../assets/save.png";
 import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
@@ -53,8 +53,8 @@ export default function SongEditor({ song = {} }) {
     } else {
       // save the song and show errors
       AddSongAsync(title, artist, lyrics, tag)
-        .then(() => {
-          alert(`New Song Added!\n${title}\n${artist}`);
+        .then((song) => {
+          alert(`New Song Added!\n${song.title}\n${song.artist}`);
           router.navigate("/", { relativeToDirectory: false });
         })
         .catch((err) => alert(err));
