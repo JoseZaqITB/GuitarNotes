@@ -114,7 +114,7 @@ export default function SongView() {
           <MyText style={styles.headerText}>{song?.title}</MyText>
           <MyText>{song?.artist}</MyText>
         </View>
-        <MyText style={styles.lyricText}>{formatLyrics(song?.lyrics)}</MyText>
+        <MyText style={styles.lyricText}>{song?.lyrics}</MyText>
       </ScrollView>
 
       <FloatingButton
@@ -157,10 +157,3 @@ const styles = StyleSheet.create({
     margin: 8,
   },
 });
-
-// functions
-function formatLyrics(lyrics) {
-  const regexforCommas = /\,/g;
-  const regexforDots = /\.\s*/g;
-  return lyrics?.replace(regexforCommas, ",\n").replace(regexforDots, ".\n\n");
-}

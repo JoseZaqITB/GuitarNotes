@@ -155,3 +155,10 @@ const styles = StyleSheet.create({
   },
 });
 const titleStyle = StyleSheet.flatten(styles.title, styles.text);
+
+// functions
+function formatLyrics(lyrics) {
+  const regexforCommas = /\,/g;
+  const regexforDots = /\.\s*/g;
+  return lyrics?.replace(regexforCommas, ",\n").replace(regexforDots, ".\n\n");
+}
