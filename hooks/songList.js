@@ -74,17 +74,29 @@ function createEmptySongList() {
   const songList = [];
   return WriteSongListAsync(songList);
 }
-// add list
+// add & remove list
 export async function AddSongAsync(title, artist, lyrics, tag) {
-  const newSong = { id: CreateRandomId(title), title, artist, lyrics, tag };
-  const songList = await GetListSongAsync();
-  if (!songList) {
-    createEmptySongList().catch((e) => alert(e));
+  try {
+    const newSong = { id: CreateRandomId(title), title, artist, lyrics, tag };
+    const songList = await GetListSongAsync();
+    if (!songList) createEmptySongList();
+    await WriteSongListAsync([...songList, newSong]);
+    return newSong;
+  } catch (error) {
+    throw error;
   }
-  WriteSongListAsync([...songList, newSong]);
-  return newSong;
 }
 
+export async function DeleteSongByidAsync(id) {
+  try {
+    const songList = await GetListSongAsync();
+    const updatedSongList = songList.filter((song) => song.id !== id);
+    await WriteSongListAsync(updatedSongList);
+    return updatedSongList;
+  } catch (error) {
+    throw error; // Re-throw to handle it at a higher level if needed
+  }
+}
 export async function UpdateSongAsync(id, title, artist, lyrics, tag) {
   const newSong = { id, title, artist, lyrics, tag };
   const songList = await GetListSongAsync();
