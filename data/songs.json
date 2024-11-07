@@ -1,0 +1,80 @@
+[
+  {
+    "id": 0,
+    "title": "temp",
+    "artist": "temp",
+    "lyrics": "temp",
+    "tag":"temp"
+  },
+  {
+    "id": 1,
+    "title": "Whispers in the Rain",
+    "artist": "Echo Lights",
+    "lyrics": "  C       F      G \nI woke up to a golden light,\n  C       F \nThe morning kissed the endless night,\n  C       F \nDreams that drift on open seas,\n  C       F \nWhispers carried by the breeze.\n  C       F      G \nThe road is long,\n  F \n the sky so wide,\n  F \nA thousand miles,\n  F \n no place to hide,\n  G \nBut in the winds,\n  G \n I hear the call,\n  F \nTelling me I'll rise if I fall.\n  G \nSo I'm chasing the sky,\n  F \n reaching so high,\n  G \nRunning with the wind,\n  F \n letting go of the why.\n  G \nWith my heart in the clouds,\n  F \n I know I'll find,\n  G \nThe place where my dreams and the stars are aligned.\n  F \nThe shadows fade as I press on,\n  G \nThe darkest night gives way to dawn.\n  F \nEvery step,\n  G \n a beating drumLeading me to where I’m from.\n  F \nThrough the storm and through the rain,\n  C \nI’ll keep moving past the pain.\n  G \nIn every tear,\n  F \n a light will shine,\n  C \nI know the road ahead is mine.\n  G \n",
+    "tag":"indie"
+  },
+  {
+    "id": 2,
+    "title": "Starlight Serenade",
+    "artist": "Nova Dreams",
+    "lyrics": "  C       F \nUnderneath the starlight,\n  C \n we fade into the night.\n  F \n Your heart is my guide,\n  C \n leading me to flight.\n  G \n",
+    "tag":"indie"
+  },
+  {
+    "id": 3,
+    "title": "Chasing the Horizon",
+    "artist": "Skyline Voyager",
+    "lyrics": "  C \nWe're chasing the horizon,\n  C \n no limits in our view.\n  F \n Through the clouds and over mountains,\n  F \n we find something new.\n  C \n",
+    "tag":"indie"
+  },
+  {
+    "id": 4,
+    "title": "Echoes of Tomorrow",
+    "artist": "The Soundwalkers",
+    "lyrics": "  C \nEchoes of tomorrow,\n  G \n reflections of today.\n  G \n In the space between,\n  C \n we find a better way.\n  G \n",
+    "tag":"indie"
+  },
+  {
+    "id": 5,
+    "title": "Silent Waves",
+    "artist": "Ocean's Embrace",
+    "lyrics": "  C \nSilent waves crash gently,\n  G \n secrets on the shore.\n  C \n The ocean's voice is calling,\n  \n asking us for more.\n  F \n",
+    "tag":"indie"
+  },
+  {
+    "id": 6,
+    "title": "Flicker of Fireflies",
+    "artist": "Moonlit Garden",
+    "lyrics": "  F \nLike a flicker of fireflies,\n  F \n we dance beneath the skies.\n  C \n Every step a heartbeat,\n  G \n love never dies.\n  G \n",
+    "tag":"indie"
+  },
+  {
+    "id": 7,
+    "title": "Through the City Lights",
+    "artist": "Neon Shadows",
+    "lyrics": "  F \nThrough the city lights,\n  C \n I see your face.\n  C \n Every turn,\n  F \n every street,\n  C \n reminds me of our place.\n  G \n",
+    "tag":"indie"
+  },
+  {
+    "id": 8,
+    "title": "Winds of Yesterday",
+    "artist": "Forgotten Souls",
+    "lyrics": "  C       F      G \nWinds of yesterday,\n  C \n they carry our lost dreams.\n  F \n Blowing through the memories,\n  C \n tearing at the seams.\n  G \n",
+    "tag":"indie"
+  },
+  {
+    "id": 9,
+    "title": "Heartbeat in the Wild",
+    "artist": "Wilderness Echo",
+    "lyrics": "  C       F       \nA heartbeat in the wild,\n  C \n untamed and free.\n  F \n Through the trees and valleys,\n  C \n it's calling you and me.\n  G \n",
+    "tag":"indie"
+  },
+  {
+    "id": 10,
+    "title": "Crimson Skies",
+    "artist": "Sunset Horizon",
+    "lyrics": "  C \nUnder crimson skies,\n  G \n the sun begins to fall.\n  \n We stand together,\n  G \n rising above it all.\n  C \n",
+    "tag":"indie"
+  }
+  
+]

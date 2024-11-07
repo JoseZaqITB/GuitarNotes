@@ -22,6 +22,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      ["expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
+        }]
+    ],
+     "scheme": "guitarnotes"
   }
 }
