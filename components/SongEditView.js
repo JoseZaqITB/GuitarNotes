@@ -9,16 +9,16 @@ import {
 } from "react-native";
 import ChordImage from "../assets/chord.png";
 import PenImage from "../assets/pen.png";
-import React from "react";
+import React, { useState } from "react";
 import MyText from "../components/MyText";
 import { colors, defaultStyles } from "../style/defaultStyles";
 
-export default function SongEditView({ lyrics }) {
-  const [isLyricsEditState, setIsLyricsEditState] = React.useState(false);
-  const [showAllChords, setShowAllChords] = React.useState(false);
-  const [currentChord, setcurrentChord] = React.useState(false);
+export default function SongEditView({ lyrics, setLyrics }) {
+  const [isChordEdition, setIsChordEdition] = useState(false);
+  const [showAllChords, setShowAllChords] = useState(false);
+  const [currentChord, setcurrentChord] = useState(false);
   const switchChangeEditState = () => {
-    setIsLyricsEditState(!isLyricsEditState);
+    setIsChordEdition(!isChordEdition);
     setShowAllChords(false);
   };
   const switchShowAllChords = () => {
@@ -44,8 +44,8 @@ export default function SongEditView({ lyrics }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={styles.headerContainer}>
-        {isLyricsEditState && (
+      {isChordEdition && (
+        <View style={styles.headerContainer}>
           <View style={styles.chordsContainer}>
             {displayedChords.map((value) => (
               <Pressable style={styles.chordButton}>
@@ -53,15 +53,16 @@ export default function SongEditView({ lyrics }) {
               </Pressable>
             ))}
           </View>
-        )}
-        <Pressable onPress={() => switchChangeEditState()}>
-          <Image
-            source={isLyricsEditState ? PenImage : ChordImage}
-            style={{ width: 36, height: 36 }}
-          />
-        </Pressable>
-      </View>
-      {isLyricsEditState && (
+
+          <Pressable onPress={() => switchChangeEditState()}>
+            <Image
+              source={isChordEdition ? PenImage : ChordImage}
+              style={{ width: 36, height: 36 }}
+            />
+          </Pressable>
+        </View>
+      )}
+      {isChordEdition && (
         <View>
           <View style={styles.allChordsContainer}>
             {showAllChords &&
@@ -83,14 +84,13 @@ export default function SongEditView({ lyrics }) {
           </Pressable>
         </View>
       )}
-      <ScrollView style={styles.lyricsContainer}>
-        <TextInput
-          defaultValue={lyrics}
-          placeholder="A full soul with an empty song..."
-          style={styles.textInput}
-          multiline
-        />
-      </ScrollView>
+      <TextInput
+        defaultValue={lyrics}
+        placeholder="A full soul with an empty song..."
+        style={{ ...styles.textInput, ...styles.lyricsContainer }}
+        onChangeText={setLyrics}
+        multiline
+      />
     </View>
   );
 }

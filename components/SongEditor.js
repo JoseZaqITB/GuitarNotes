@@ -12,10 +12,14 @@ import {
 // main
 import PagerView from "react-native-pager-view";
 import saveIcon from "../assets/save.png";
+import penIcon from "../assets/pen.png";
+import chordIcon from "../assets/chord.png";
 import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
 import MyText from "./MyText";
+import SongEditView from "./SongEditView";
+import ChordEditor from "./ChordEditor";
 
 export default function SongEditor({ song = {} }) {
   // add save button
@@ -24,10 +28,29 @@ export default function SongEditor({ song = {} }) {
   const [artist, setArtist] = useState(song.artist || "");
   const [tag, setTag] = useState(song.tag || "");
   const [lyrics, setLyrics] = useState(song.lyrics || "");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isChordEdition, setIsChordEdition] = useState(false);
   // set a saveButton to the header and updated each time a state is updated
   useEffect(() => {
-    navigation.setOptions({ headerRight: () => <SaveButton /> });
-  }, [navigation, title, artist, tag, lyrics]);
+    navigation.setOptions({
+      headerRight: () =>
+        currentPage === 1 ? (
+          <View style={styles.headerButtonsContainer}>
+            <ImgButton
+              handler={() => setIsChordEdition(!isChordEdition)}
+              icon={isChordEdition ? penIcon : chordIcon}
+            />
+            <View style={{ width: 16 }} />
+            <ImgButton handler={handleSaveSong} icon={saveIcon} />
+          </View>
+        ) : (
+          <View style={styles.headerButtonsContainer}>
+            <ImgButton handler={handleSaveSong} icon={saveIcon} />
+          </View>
+        ),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigation, title, artist, tag, lyrics, currentPage, isChordEdition]);
 
   const handleSaveSong = () => {
     // make sure all fields are filled
@@ -60,16 +83,20 @@ export default function SongEditor({ song = {} }) {
         .catch((err) => alert(err));
     }
   };
-  const SaveButton = () => {
+  const ImgButton = ({ icon, handler }) => {
     return (
-      <Pressable onPress={handleSaveSong}>
-        <Image source={saveIcon} />
+      <Pressable onPress={handler}>
+        <Image source={icon} />
       </Pressable>
     );
   };
 
   return (
-    <PagerView initialPage={0} style={{ flex: 1 }}>
+    <PagerView
+      initialPage={0}
+      style={{ flex: 1 }}
+      onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
+    >
       <View style={styles.mainContainer}>
         <View style={styles.inputContainer}>
           <MyText style={titleStyle}>Title</MyText>
@@ -102,7 +129,9 @@ export default function SongEditor({ song = {} }) {
           />
         </View>
       </View>
-      <ScrollView style={styles.lyricsContainer}>
+      {isChordEdition ? (
+        <ChordEditor />
+      ) : (
         <TextInput
           value={lyrics}
           placeholder="A full fish soul with an empty song..."
@@ -110,7 +139,7 @@ export default function SongEditor({ song = {} }) {
           onChangeText={setLyrics}
           multiline
         />
-      </ScrollView>
+      )}
     </PagerView>
   );
 }
@@ -152,6 +181,12 @@ const styles = StyleSheet.create({
     color: colors.light.textPrimary,
     textAlignVertical: "top",
     minHeight: "100%", // right?. when no text, text keeps in size of container
+    padding: 16,
+  },
+  headerButtonsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 });
 const titleStyle = StyleSheet.flatten(styles.title, styles.text);
