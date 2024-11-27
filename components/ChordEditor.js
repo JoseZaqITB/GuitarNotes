@@ -13,7 +13,7 @@ import { useState } from "react";
 export default function ChordEditor({ lyrics }) {
   // vars
   const chordify = useChordify(toLyricLines(lyrics));
-  const [currentChord, setCurrentChord] = useState("C");
+  const [currentChord, setCurrentChord] = useState("Cm7");
 
   let chordIndex = 0;
   let lyricsAndChords = [];

@@ -33,7 +33,11 @@ export default function useChordify(_lyricsLines, _chordLines) {
 
   // allows to insert a substring in a string at a given position
   function insertByIndex(string, substring, index) {
-    const newStr = string.slice(0, index - 1) + substring + string.slice(index);
+    // REPLACE (not add) the string in the position using the needed space
+    const newStr =
+      string.slice(0, index - substring.length) +
+      substring +
+      string.slice(index);
     return newStr;
   }
 
