@@ -1,22 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function useChordify({ lyrics: _lyrics, chords: _chords }) {
+export default function useChordify(_lyricsLines, _chordLines) {
   // states
-  const [lyrics, setLyrics] = useState(_lyrics);
-  const [chords, setChords] = useState(
-    _chords ? _chords : _lyrics.replace(/[^\s\n]/g, " "),
+  const [lyricsLines, setLyricsLines] = useState(_lyricsLines);
+  const [chordLines, setChordLines] = useState(
+    _chordLines
+      ? _chordLines
+      : _lyricsLines.map((line) => line.replace(/[^\s\n]/g, " ")),
   ); // replace any letter, comma or dot by \s
-  console.log(chords);
   // add a new chord
   /* let updatedChords = _chords; */
-  // read lyrics ( or read a chord instead?)
-  function getLyricLines() {
-    return lyrics.split("\n");
-  }
 
-  function getChordLines() {
-    return chords.split("\n");
-  }
   /* 
   const lyricLines = getLyricLines();
   const chordLines = getChordLines();
@@ -38,9 +32,9 @@ export default function useChordify({ lyrics: _lyrics, chords: _chords }) {
   console.log(updatedChords); */
 
   // allows to insert a substring in a string at a given position
-  function insertByIndex(string, index) {
-    const newStr = lyrics.slice(0, index) + string + lyrics.slice(index);
-    setLyrics(newStr);
+  function insertByIndex(string, substring, index) {
+    const newStr = string.slice(0, index - 1) + substring + string.slice(index);
+    return newStr;
   }
 
   // remove a string by position
@@ -49,10 +43,41 @@ export default function useChordify({ lyrics: _lyrics, chords: _chords }) {
     return str.slice(0, index) + line;
   }
 
+  // inserts per state
+  function addChordAtLine(line, chord, position) {
+    const newChordLines = chordLines.map((chordLine, chordIndex) => {
+      // see if the position to add the chord has occupied its neighbors and himself
+      const isPosValid =
+        isPositionValid(chordLine.at(position)) &&
+        isPositionValid(chordLine.at(position - 1)) &&
+        isPositionValid(chordLine.at(position + 1));
+      if (chordIndex === line && isPosValid) {
+        return insertByIndex(chordLine, chord, position);
+      } else return chordLine;
+    });
+    setChordLines(newChordLines);
+  }
+
+  useEffect(() => {
+    console.log(chordLines);
+  }, [setChordLines, chordLines]);
+
   return {
-    getChordLines,
-    getLyricLines,
-    chords,
-    lyrics,
+    chordLines,
+    lyricsLines,
+    addChordAtLine,
   };
+}
+
+// read lyrics ( or read a chord instead?)
+export function toLyricLines(lyrics) {
+  return lyrics.split("\n");
+}
+
+export function toChordLines(chords) {
+  return chords.split("\n");
+}
+
+function isPositionValid(stringPosition) {
+  return stringPosition === "" || stringPosition === " ";
 }
