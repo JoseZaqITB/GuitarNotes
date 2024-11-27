@@ -39,7 +39,6 @@ export default function ChordEditor({ lyrics }) {
                 -1 + (index + 1) / 2,
               )
             }
-            autoFocus={false}
             selectTextOnFocus={false}
             showSoftInputOnFocus={false}
             contextMenuHidden
@@ -63,14 +62,14 @@ const styles = StyleSheet.create({
     fontFamily: monoSpaceFamily,
     borderWidth: 1,
     borderColor: "red",
-    ...defaultStyles.middleText,
+    ...defaultStyles.smallText,
   },
   mainContainer: {
     margin: 16,
   },
   textInput: {
     fontFamily: monoSpaceFamily,
-    ...defaultStyles.middleText,
+    ...defaultStyles.smallText,
     color: colors.light.textPrimary,
     textAlignVertical: "top",
     borderWidth: 1,

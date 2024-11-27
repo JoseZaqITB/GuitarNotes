@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function useChordify(_lyricsLines, _chordLines) {
   // states
@@ -51,20 +51,13 @@ export default function useChordify(_lyricsLines, _chordLines) {
   function addChordAtLine(line, chord, position) {
     const newChordLines = chordLines.map((chordLine, chordIndex) => {
       // see if the position to add the chord has occupied its neighbors and himself
-      const isPosValid =
-        isPositionValid(chordLine.at(position)) &&
-        isPositionValid(chordLine.at(position - 1)) &&
-        isPositionValid(chordLine.at(position + 1));
+      const isPosValid = isPositionValid(chordLine.at(position));
       if (chordIndex === line && isPosValid) {
         return insertByIndex(chordLine, chord, position);
       } else return chordLine;
     });
     setChordLines(newChordLines);
   }
-
-  useEffect(() => {
-    console.log(chordLines);
-  }, [setChordLines, chordLines]);
 
   return {
     chordLines,
