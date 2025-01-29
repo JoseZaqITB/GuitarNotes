@@ -23,21 +23,26 @@ export default function useChordify(_lyricsLines, _chordLines) {
     chordIndex++;
   });
 
-  console.log("lyricsAndChords: ");
-  console.log(lyricsAndChords);
  */
   // delete a chord ( it can delete wrong, because of index could start in the middle of a chord)
   /*  updatedChords = removeStringByIndex(updatedChords, 46);
-  console.log("delete scene: ");
-  console.log(updatedChords); */
 
   // allows to insert a substring in a string at a given position
+  /**
+   * @param {number} index
+   * @param {string} string
+   * @param {string} substring
+   * @returns {string}
+   */
   function insertByIndex(string, substring, index) {
     // REPLACE (not add) the string in the position using the needed space
+    const newChordStartIndex = index - Math.floor(substring.length / 2);
+    const restStringStartIndex = index + Math.round(substring.length / 2); // +1 because the index is included when slicing the string
+
     const newStr =
-      string.slice(0, index - substring.length) +
+      string.slice(0, newChordStartIndex) +
       substring +
-      string.slice(index);
+      string.slice(restStringStartIndex);
     return newStr;
   }
 
@@ -51,8 +56,7 @@ export default function useChordify(_lyricsLines, _chordLines) {
   function addChordAtLine(line, chord, position) {
     const newChordLines = chordLines.map((chordLine, chordIndex) => {
       // see if the position to add the chord has occupied its neighbors and himself
-      const isPosValid = isPositionValid(chordLine.at(position));
-      if (chordIndex === line && isPosValid) {
+      if (chordIndex === line && isPositionValid(chordLine, chord, position)) {
         return insertByIndex(chordLine, chord, position);
       } else return chordLine;
     });
@@ -75,6 +79,24 @@ export function toChordLines(chords) {
   return chords.split("\n");
 }
 
-function isPositionValid(stringPosition) {
-  return stringPosition === "" || stringPosition === " ";
+/**
+ * @description Analize if there is a chord already placed in the position given, otherwise return true.
+ * @param {string} line
+ * @param {number} position
+ * @param {string} chord
+ * @returns {boolean}
+ **/
+function isPositionValid(line, chord, position) {
+  let returnValue = true;
+  // see if the position to add the chord has occupied its neighbors
+  const startPosition = position - Math.floor(chord.length / 2);
+  returnValue = chord
+    .split("")
+    .every(
+      (c, index) =>
+        line.at(startPosition + index) === "" ||
+        line.at(startPosition + index) === " ",
+    );
+  console.log(returnValue);
+  return returnValue;
 }

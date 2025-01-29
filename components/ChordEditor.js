@@ -13,7 +13,7 @@ import { useState } from "react";
 export default function ChordEditor({ lyrics }) {
   // vars
   const chordify = useChordify(toLyricLines(lyrics));
-  const [currentChord, setCurrentChord] = useState("Cm7");
+  const [currentChord, setCurrentChord] = useState("Cm");
 
   let chordIndex = 0;
   let lyricsAndChords = [];
@@ -36,9 +36,12 @@ export default function ChordEditor({ lyrics }) {
             onSelectionChange={(e) =>
               handleSelection(
                 e.nativeEvent.selection.start,
-                -1 + (index + 1) / 2,
+                -1 +
+                  (index + 1) /
+                    2 /* index is not the real index for lyrics maps, it's just the peers index  */,
               )
             }
+            selection={0} // define a value avoiding placed the caret at the end of the text when first tapped. and be able to add a chord since the first tap
             selectTextOnFocus={false}
             showSoftInputOnFocus={false}
             contextMenuHidden
