@@ -1,26 +1,10 @@
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import ChordImage from "../assets/chord.png";
-import PenImage from "../assets/pen.png";
+import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import MyText from "../components/MyText";
 import { colors, defaultStyles } from "../style/defaultStyles";
 
-export default function SongEditView({ lyrics, setLyrics }) {
-  const [isChordEdition, setIsChordEdition] = useState(false);
+export default function SongEditView({ updateChord }) {
   const [showAllChords, setShowAllChords] = useState(false);
-  const [currentChord, setcurrentChord] = useState(false);
-  const switchChangeEditState = () => {
-    setIsChordEdition(!isChordEdition);
-    setShowAllChords(false);
-  };
   const switchShowAllChords = () => {
     setShowAllChords(!showAllChords);
   };
@@ -43,54 +27,50 @@ export default function SongEditView({ lyrics, setLyrics }) {
   ];
 
   return (
-    <View style={{ flex: 1 }}>
-      {isChordEdition && (
-        <View style={styles.headerContainer}>
-          <View style={styles.chordsContainer}>
-            {displayedChords.map((value) => (
-              <Pressable style={styles.chordButton}>
-                <MyText style={styles.text}>{value}</MyText>
-              </Pressable>
-            ))}
-          </View>
-
-          <Pressable onPress={() => switchChangeEditState()}>
-            <Image
-              source={isChordEdition ? PenImage : ChordImage}
-              style={{ width: 36, height: 36 }}
-            />
-          </Pressable>
-        </View>
-      )}
-      {isChordEdition && (
-        <View>
-          <View style={styles.allChordsContainer}>
-            {showAllChords &&
-              allChords.map((value) => (
-                <Pressable style={styles.chordButton}>
-                  <MyText style={styles.text}>{value}</MyText>
-                </Pressable>
-              ))}
-          </View>
-          <Pressable onPress={() => switchShowAllChords()}>
-            <MyText
-              style={{
-                ...styles.text,
-                textAlign: "center",
-              }}
+    <View>
+      <View style={styles.headerContainer}>
+        <View style={styles.chordsContainer}>
+          <TouchableOpacity
+            style={styles.chordButton}
+            onPress={() => updateChord(" ")}
+          >
+            <MyText style={styles.text}>🚫</MyText>
+          </TouchableOpacity>
+          {displayedChords.map((value, index) => (
+            <TouchableOpacity
+              key={index + value}
+              style={styles.chordButton}
+              onPress={() => updateChord(value)}
             >
-              {showAllChords ? "^" : "v"}
-            </MyText>
-          </Pressable>
+              <MyText style={styles.text}>{value}</MyText>
+            </TouchableOpacity>
+          ))}
         </View>
-      )}
-      <TextInput
-        defaultValue={lyrics}
-        placeholder="A full soul with an empty song..."
-        style={{ ...styles.textInput, ...styles.lyricsContainer }}
-        onChangeText={setLyrics}
-        multiline
-      />
+      </View>
+      <View>
+        <View style={styles.allChordsContainer}>
+          {showAllChords &&
+            allChords.map((value, index) => (
+              <TouchableOpacity
+                key={index + value}
+                style={styles.chordButton}
+                onPress={() => updateChord(value)}
+              >
+                <MyText style={styles.text}>{value}</MyText>
+              </TouchableOpacity>
+            ))}
+        </View>
+        <Pressable onPress={() => switchShowAllChords()}>
+          <MyText
+            style={{
+              ...styles.text,
+              textAlign: "center",
+            }}
+          >
+            {showAllChords ? "^" : "v"}
+          </MyText>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -99,7 +79,6 @@ const buttonSize = 36;
 
 const styles = StyleSheet.create({
   headerContainer: {
-    flex: 0.1,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",

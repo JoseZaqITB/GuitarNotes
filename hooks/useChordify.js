@@ -7,7 +7,9 @@ export default function useChordify(_lyricsLines, _chordLines) {
     _chordLines
       ? _chordLines
       : _lyricsLines.map((line) => line.replace(/[^\s\n]/g, " ")),
-  ); // replace any letter, comma or dot by \s
+  );
+  const [chords, setChords] = useState({});
+  // replace any letter, comma or dot by \s
   // add a new chord
   /* let updatedChords = _chords; */
 
@@ -34,10 +36,10 @@ export default function useChordify(_lyricsLines, _chordLines) {
    * @param {string} substring
    * @returns {string}
    */
-  function insertByIndex(string, substring, index) {
+  function insertStringByIndex(string, substring, index) {
     // REPLACE (not add) the string in the position using the needed space
     const newChordStartIndex = index - Math.floor(substring.length / 2);
-    const restStringStartIndex = index + Math.round(substring.length / 2); // +1 because the index is included when slicing the string
+    const restStringStartIndex = index + Math.round(substring.length / 2); // +1(rounding) because the index is included when slicing the string
 
     const newStr =
       string.slice(0, newChordStartIndex) +
@@ -47,22 +49,41 @@ export default function useChordify(_lyricsLines, _chordLines) {
   }
 
   // remove a string by position
-  function removeStringByIndex(str, index) {
-    const line = str.slice(index).replace(/\w+/, "");
-    return str.slice(0, index) + line;
+  function removeStringByIndex(line, chord, position) {
+    const newSubLine =
+      line
+        .slice(position, Number(position + chord.length))
+        .replace(/\w/g, " ") + line.slice(Number(position + chord.length));
+    return line.slice(0, position) + newSubLine;
   }
 
   // inserts per state
-  function addChordAtLine(line, chord, position) {
+  function addChordAtLine(lineIndex, chord, position) {
     const newChordLines = chordLines.map((chordLine, chordIndex) => {
       // see if the position to add the chord has occupied its neighbors and himself
-      if (chordIndex === line && isPositionValid(chordLine, chord, position)) {
-        return insertByIndex(chordLine, chord, position);
+      const actualPosition =
+        (position - Math.floor(chord.length / 2)) * Number(lineIndex + 1);
+      if (chordIndex === lineIndex) {
+        if (chords[actualPosition]) {
+          const oldChord = chords[actualPosition];
+          const removedChordLine = removeStringByIndex(
+            chordLine,
+            oldChord,
+            position,
+          );
+          chords[actualPosition] = chord;
+          setChords(chords);
+          return insertStringByIndex(removedChordLine, chord, position);
+        }
+        if (isPositionValid(chordLine, chord, position)) {
+          chords[actualPosition] = chord;
+          setChords(chords);
+          return insertStringByIndex(chordLine, chord, position);
+        } else return chordLine;
       } else return chordLine;
     });
     setChordLines(newChordLines);
   }
-
   return {
     chordLines,
     lyricsLines,
@@ -97,6 +118,5 @@ function isPositionValid(line, chord, position) {
         line.at(startPosition + index) === "" ||
         line.at(startPosition + index) === " ",
     );
-  console.log(returnValue);
   return returnValue;
 }
