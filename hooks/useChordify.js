@@ -1,34 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function useChordify(_lyricsLines, _chordLines) {
+const chordLineWidth = 48; // each line must have this max chars
+export default function useChordify(lyrics, chords) {
   // states
-  const [lyricsLines, setLyricsLines] = useState(_lyricsLines);
+  const [lyricsLines, setLyricsLines] = useState(toLines(lyrics));
   const [chordLines, setChordLines] = useState(
-    _chordLines
-      ? _chordLines
-      : _lyricsLines.map((line) => line.replace(/[^\s\n]/g, " ")),
+    toLines(lyrics).map((line) => " ".repeat(chordLineWidth)),
   );
-  const [chords, setChords] = useState({});
-  // replace any letter, comma or dot by \s
-  // add a new chord
-  /* let updatedChords = _chords; */
-
-  /* 
-  const lyricLines = getLyricLines();
-  const chordLines = getChordLines();
-
-  let chordIndex = 0;
-  var lyricsAndChords = "";
-  lyricLines.forEach((lyricLine) => {
-    lyricsAndChords +=
-      "\x1b[31m" + chordLines[chordIndex] + "\n\x1b[0m" + lyricLine + "\n";
-    chordIndex++;
-  });
-
- */
-  // delete a chord ( it can delete wrong, because of index could start in the middle of a chord)
-  /*  updatedChords = removeStringByIndex(updatedChords, 46);
-
+  const [stateChords, setChords] = useState(chords ? chords : {});
+  // useEffect
+  useEffect(() => {
+    const reorganizeChords = () => {
+      const organizedChords = {};
+      Object.entries(stateChords).forEach((keyValue) =>
+        keyValue[1].forEach((pos) => (organizedChords[pos] = keyValue[0])),
+      );
+      return organizedChords;
+    };
+    const updateChordLines = (chords) => {
+      let chordStr = chordLines.join("\n").split("");
+      Object.entries(chords).forEach((keyValue) =>
+        keyValue[1]
+          .split("")
+          .forEach(
+            (char, index) => (chordStr[Number(keyValue[0]) + index] = char),
+          ),
+      );
+      return chordStr.join("").split("\n");
+    };
+    if (stateChords === chords) {
+      const organizedChords = reorganizeChords();
+      const updatedChordLines = updateChordLines(organizedChords);
+      setChords(organizedChords);
+      setChordLines(updatedChordLines);
+    }
+  }, []);
   // allows to insert a substring in a string at a given position
   /**
    * @param {number} index
@@ -62,22 +68,24 @@ export default function useChordify(_lyricsLines, _chordLines) {
     const newChordLines = chordLines.map((chordLine, chordIndex) => {
       // see if the position to add the chord has occupied its neighbors and himself
       const actualPosition =
-        (position - Math.floor(chord.length / 2)) * Number(lineIndex + 1);
+        position -
+        Math.floor(chord.length / 2) +
+        (chordLineWidth + 1) * lineIndex; // +1 is the \n in each line -> position + lineWidth * NthLine
       if (chordIndex === lineIndex) {
-        if (chords[actualPosition]) {
-          const oldChord = chords[actualPosition];
+        if (stateChords[actualPosition]) {
+          const oldChord = stateChords[actualPosition];
           const removedChordLine = removeStringByIndex(
             chordLine,
             oldChord,
             position,
           );
-          chords[actualPosition] = chord;
-          setChords(chords);
+          stateChords[actualPosition] = chord;
+          setChords(stateChords);
           return insertStringByIndex(removedChordLine, chord, position);
         }
         if (isPositionValid(chordLine, chord, position)) {
-          chords[actualPosition] = chord;
-          setChords(chords);
+          stateChords[actualPosition] = chord;
+          setChords(stateChords);
           return insertStringByIndex(chordLine, chord, position);
         } else return chordLine;
       } else return chordLine;
@@ -92,7 +100,7 @@ export default function useChordify(_lyricsLines, _chordLines) {
 }
 
 // read lyrics ( or read a chord instead?)
-export function toLyricLines(lyrics) {
+export function toLines(lyrics) {
   return lyrics.split("\n");
 }
 

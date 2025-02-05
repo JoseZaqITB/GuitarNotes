@@ -130,7 +130,7 @@ export default function SongEditor({ song = {} }) {
         </View>
       </View>
       {isChordEdition ? (
-        <ChordEditor lyrics={lyrics} />
+        <ChordEditor lyrics={lyrics} chords={song.chords} />
       ) : (
         <TextInput
           value={lyrics}

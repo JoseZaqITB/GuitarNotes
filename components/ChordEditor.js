@@ -1,13 +1,13 @@
 import { Platform, ScrollView, StyleSheet, TextInput } from "react-native";
 import { colors, defaultStyles } from "../style/defaultStyles";
-import useChordify, { toLyricLines } from "../hooks/useChordify";
+import useChordify from "../hooks/useChordify";
 import MyText from "./MyText";
 import { useState } from "react";
 import SongEditView from "./SongEditView";
 
-export default function ChordEditor({ lyrics }) {
+export default function ChordEditor({ lyrics, chords }) {
   // vars
-  const chordify = useChordify(toLyricLines(lyrics));
+  const chordify = useChordify(lyrics, chords);
   const [currentChord, setCurrentChord] = useState("A");
 
   let chordIndex = 0;
@@ -63,8 +63,6 @@ const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // 
 const styles = StyleSheet.create({
   chordText: {
     fontFamily: monoSpaceFamily,
-    borderWidth: 1,
-    borderColor: "red",
     ...defaultStyles.smallText,
   },
   mainContainer: {
@@ -75,6 +73,5 @@ const styles = StyleSheet.create({
     ...defaultStyles.smallText,
     color: colors.light.textPrimary,
     textAlignVertical: "top",
-    borderWidth: 1,
   },
 });
