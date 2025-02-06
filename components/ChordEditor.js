@@ -2,25 +2,33 @@ import { Platform, ScrollView, StyleSheet, TextInput } from "react-native";
 import { colors, defaultStyles } from "../style/defaultStyles";
 import useChordify from "../hooks/useChordify";
 import MyText from "./MyText";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SongEditView from "./SongEditView";
 
-export default function ChordEditor({ lyrics, chords }) {
+export default function ChordEditor({ lyrics, chords, setChords }) {
   // vars
-  const chordify = useChordify(lyrics, chords);
+  const {
+    lyricsLines,
+    chordLines,
+    chords: updatedChords,
+    addChordAtLine,
+  } = useChordify(lyrics, chords);
   const [currentChord, setCurrentChord] = useState("A");
 
   let chordIndex = 0;
   let lyricsAndChords = [];
-  chordify.lyricsLines.forEach((lyricLine) => {
-    lyricsAndChords.push(chordify.chordLines[chordIndex]);
+  lyricsLines.forEach((lyricLine) => {
+    lyricsAndChords.push(chordLines[chordIndex]);
     lyricsAndChords.push(lyricLine);
     chordIndex++;
   });
   //
   const handleSelection = (position, index) => {
-    chordify.addChordAtLine(index, currentChord, position);
+    addChordAtLine(index, currentChord, position);
   };
+  //
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setChords(updatedChords), [updatedChords]);
   return (
     <>
       <SongEditView

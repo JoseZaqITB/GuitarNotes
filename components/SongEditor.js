@@ -1,14 +1,7 @@
 // info
 import { colors, defaultStyles } from "../style/defaultStyles";
 // editor
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
 // main
 import PagerView from "react-native-pager-view";
 import saveIcon from "../assets/save.png";
@@ -18,7 +11,6 @@ import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
 import MyText from "./MyText";
-import SongEditView from "./SongEditView";
 import ChordEditor from "./ChordEditor";
 
 export default function SongEditor({ song = {} }) {
@@ -28,6 +20,7 @@ export default function SongEditor({ song = {} }) {
   const [artist, setArtist] = useState(song.artist || "");
   const [tag, setTag] = useState(song.tag || "");
   const [lyrics, setLyrics] = useState(song.lyrics || "");
+  const [chords, setChords] = useState(song.chords || {});
   const [currentPage, setCurrentPage] = useState(0);
   const [isChordEdition, setIsChordEdition] = useState(false);
   // set a saveButton to the header and updated each time a state is updated
@@ -50,7 +43,16 @@ export default function SongEditor({ song = {} }) {
         ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigation, title, artist, tag, lyrics, currentPage, isChordEdition]);
+  }, [
+    navigation,
+    title,
+    artist,
+    tag,
+    lyrics,
+    chords,
+    currentPage,
+    isChordEdition,
+  ]);
 
   const handleSaveSong = () => {
     // make sure all fields are filled
@@ -67,7 +69,7 @@ export default function SongEditor({ song = {} }) {
     // capitalize title, artist, and tag // TODO
     // if is song passed, update the song
     if (song.id) {
-      UpdateSongAsync(song.id, title, artist, lyrics, tag)
+      UpdateSongAsync(song.id, title, artist, lyrics, chords, tag)
         .then(() => {
           alert(`Song Updated!\n${title}\n${artist}`);
           router.navigate("/", { relativeToDirectory: false });
@@ -75,7 +77,7 @@ export default function SongEditor({ song = {} }) {
         .catch((err) => alert(err));
     } else {
       // save the song and show errors
-      AddSongAsync(title, artist, lyrics, tag)
+      AddSongAsync(title, artist, lyrics, chords, tag)
         .then((song) => {
           alert(`New Song Added!\n${song.title}\n${song.artist}`);
           router.navigate("/", { relativeToDirectory: false });
@@ -130,7 +132,11 @@ export default function SongEditor({ song = {} }) {
         </View>
       </View>
       {isChordEdition ? (
-        <ChordEditor lyrics={lyrics} chords={song.chords} />
+        <ChordEditor
+          lyrics={lyrics}
+          chords={chords}
+          setChords={(newChords) => setChords(newChords)}
+        />
       ) : (
         <TextInput
           value={lyrics}
@@ -190,10 +196,3 @@ const styles = StyleSheet.create({
   },
 });
 const titleStyle = StyleSheet.flatten(styles.title, styles.text);
-
-// functions
-function formatLyrics(lyrics) {
-  const regexforCommas = /\,/g;
-  const regexforDots = /\.\s*/g;
-  return lyrics?.replace(regexforCommas, ",\n").replace(regexforDots, ".\n\n");
-}

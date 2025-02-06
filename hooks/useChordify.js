@@ -1,22 +1,15 @@
 import { useEffect, useState } from "react";
 
 const chordLineWidth = 48; // each line must have this max chars
-export default function useChordify(lyrics, chords) {
+export default function useChordify(lyrics, _chords) {
   // states
-  const [lyricsLines, setLyricsLines] = useState(toLines(lyrics));
+  const lyricsLines = toLines(lyrics);
   const [chordLines, setChordLines] = useState(
     toLines(lyrics).map((line) => " ".repeat(chordLineWidth)),
   );
-  const [stateChords, setChords] = useState(chords ? chords : {});
+  const [chords, setChords] = useState(_chords ? _chords : {});
   // useEffect
   useEffect(() => {
-    const reorganizeChords = () => {
-      const organizedChords = {};
-      Object.entries(stateChords).forEach((keyValue) =>
-        keyValue[1].forEach((pos) => (organizedChords[pos] = keyValue[0])),
-      );
-      return organizedChords;
-    };
     const updateChordLines = (chords) => {
       let chordStr = chordLines.join("\n").split("");
       Object.entries(chords).forEach((keyValue) =>
@@ -28,12 +21,12 @@ export default function useChordify(lyrics, chords) {
       );
       return chordStr.join("").split("\n");
     };
-    if (stateChords === chords) {
-      const organizedChords = reorganizeChords();
+    if (chords === _chords) {
+      const organizedChords = groupByPosition(chords);
       const updatedChordLines = updateChordLines(organizedChords);
-      setChords(organizedChords);
       setChordLines(updatedChordLines);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // allows to insert a substring in a string at a given position
   /**
@@ -62,9 +55,9 @@ export default function useChordify(lyrics, chords) {
         .replace(/\w/g, " ") + line.slice(Number(position + chord.length));
     return line.slice(0, position) + newSubLine;
   }
-
   // inserts per state
   function addChordAtLine(lineIndex, chord, position) {
+    const newChords = groupByPosition(chords); // change object distribution to find quick by position, at end restart the original order
     const newChordLines = chordLines.map((chordLine, chordIndex) => {
       // see if the position to add the chord has occupied its neighbors and himself
       const actualPosition =
@@ -72,29 +65,29 @@ export default function useChordify(lyrics, chords) {
         Math.floor(chord.length / 2) +
         (chordLineWidth + 1) * lineIndex; // +1 is the \n in each line -> position + lineWidth * NthLine
       if (chordIndex === lineIndex) {
-        if (stateChords[actualPosition]) {
-          const oldChord = stateChords[actualPosition];
+        if (newChords[actualPosition]) {
+          const oldChord = newChords[actualPosition];
           const removedChordLine = removeStringByIndex(
             chordLine,
             oldChord,
             position,
           );
-          stateChords[actualPosition] = chord;
-          setChords(stateChords);
+          newChords[actualPosition] = chord;
           return insertStringByIndex(removedChordLine, chord, position);
         }
         if (isPositionValid(chordLine, chord, position)) {
-          stateChords[actualPosition] = chord;
-          setChords(stateChords);
+          newChords[actualPosition] = chord;
           return insertStringByIndex(chordLine, chord, position);
         } else return chordLine;
       } else return chordLine;
     });
+    setChords(groupByChords(newChords));
     setChordLines(newChordLines);
   }
   return {
     chordLines,
     lyricsLines,
+    chords,
     addChordAtLine,
   };
 }
@@ -128,3 +121,21 @@ function isPositionValid(line, chord, position) {
     );
   return returnValue;
 }
+
+function groupByChords(chords) {
+  const organizedChords = {};
+  Object.entries(chords).forEach((keyValue) => {
+    if (organizedChords[keyValue[1]])
+      organizedChords[keyValue[1]].push(keyValue[0]);
+    else organizedChords[keyValue[1]] = [keyValue[0]];
+  });
+  return organizedChords;
+}
+
+const groupByPosition = (chords) => {
+  const organizedChords = {};
+  Object.entries(chords).forEach((keyValue) =>
+    keyValue[1].forEach((pos) => (organizedChords[pos] = keyValue[0])),
+  );
+  return organizedChords;
+};
