@@ -3,31 +3,62 @@ import { useEffect, useState } from "react";
 const chordLineWidth = 48; // each line must have this max chars
 export default function useChordify(lyrics, _chords) {
   // states
-  const lyricsLines = toLines(lyrics);
   const [chordLines, setChordLines] = useState(
     toLines(lyrics).map((line) => " ".repeat(chordLineWidth)),
-  );
+  ); // u could use get rid of it and use just chords
   const [chords, setChords] = useState(_chords ? _chords : {});
+  const [lyricsAndChords, setLyricsAndChords] = useState("");
   // useEffect
   useEffect(() => {
-    const updateChordLines = (chords) => {
-      let chordStr = chordLines.join("\n").split("");
-      Object.entries(chords).forEach((keyValue) =>
-        keyValue[1]
-          .split("")
-          .forEach(
-            (char, index) => (chordStr[Number(keyValue[0]) + index] = char),
-          ),
-      );
-      return chordStr.join("").split("\n");
-    };
     if (chords === _chords) {
       const organizedChords = groupByPosition(chords);
-      const updatedChordLines = updateChordLines(organizedChords);
+      const updatedChordLines = updateChordLines(organizedChords, chordLines);
       setChordLines(updatedChordLines);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // updade lyricsAndChords each time Chord/lyrics-line changes
+  useEffect(() => {
+    let chordIndex = 0;
+    let newLyricsAndChords = [];
+    const lyricsLines = toLines(lyrics);
+    lyricsLines.forEach((lyricLine) => {
+      newLyricsAndChords.push(chordLines[chordIndex]);
+      newLyricsAndChords.push(lyricLine);
+      chordIndex++;
+    });
+    setLyricsAndChords(newLyricsAndChords.join("\n"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chordLines]);
+
+  useEffect(() => {
+    let newChordLines = [];
+    if (lyrics) {
+      newChordLines = toLines(lyrics).map((line) => " ".repeat(chordLineWidth));
+    }
+    if (_chords) {
+      const organizedChords = groupByPosition(_chords);
+      const updatedChordLines = updateChordLines(
+        organizedChords,
+        newChordLines,
+      );
+      setChords(_chords);
+      setChordLines(updatedChordLines);
+    }
+  }, [lyrics, _chords]);
+
+  const updateChordLines = (chords, chordLines) => {
+    let chordStr = chordLines.join("\n").split("");
+    Object.entries(chords).forEach((keyValue) =>
+      keyValue[1]
+        .split("")
+        .forEach(
+          (char, index) => (chordStr[Number(keyValue[0]) + index] = char),
+        ),
+    );
+    return chordStr.join("").split("\n");
+  };
   // allows to insert a substring in a string at a given position
   /**
    * @param {number} index
@@ -86,7 +117,7 @@ export default function useChordify(lyrics, _chords) {
   }
   return {
     chordLines,
-    lyricsLines,
+    lyricsAndChords,
     chords,
     addChordAtLine,
   };
@@ -94,11 +125,8 @@ export default function useChordify(lyrics, _chords) {
 
 // read lyrics ( or read a chord instead?)
 export function toLines(lyrics) {
-  return lyrics.split("\n");
-}
-
-export function toChordLines(chords) {
-  return chords.split("\n");
+  if (lyrics) return lyrics.split("\n");
+  return [];
 }
 
 /**

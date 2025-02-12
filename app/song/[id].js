@@ -1,4 +1,11 @@
-import { Animated, Image, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Animated,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import confIcon from "../../assets/conf.png";
 import arrowIcon from "../../assets/arrow.png";
@@ -8,6 +15,7 @@ import React, { useEffect, useRef, useState } from "react";
 import ConfigModal from "../../components/ConfigModal";
 import { colors, defaultStyles } from "../../style/defaultStyles";
 import useSongList from "../../hooks/songList";
+import useChordify from "../../hooks/useChordify";
 
 export default function SongView() {
   // vars
@@ -27,6 +35,7 @@ export default function SongView() {
   // define the distance to scroll
   const scrollDistance =
     lyricSize > scrollViewHeight ? lyricSize - scrollViewHeight : lyricSize;
+  const { lyricsAndChords } = useChordify(song?.lyrics, song?.chords);
   // functions for scrolling
   const handleAutoscrollButton = () => {
     setAutoscroll(!autoscroll);
@@ -114,7 +123,7 @@ export default function SongView() {
           <MyText style={styles.headerText}>{song?.title}</MyText>
           <MyText>{song?.artist}</MyText>
         </View>
-        <MyText style={styles.lyricText}>{song?.lyrics}</MyText>
+        <MyText style={styles.lyricText}>{lyricsAndChords}</MyText>
       </ScrollView>
 
       <FloatingButton
@@ -142,6 +151,7 @@ export default function SongView() {
   );
 }
 
+const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // choose monospace font by OS
 const styles = StyleSheet.create({
   headerContainer: {
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -156,5 +166,6 @@ const styles = StyleSheet.create({
     ...defaultStyles.middleText,
     lineHeight: 24,
     margin: 8,
+    fontFamily: monoSpaceFamily,
   },
 });

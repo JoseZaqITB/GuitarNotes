@@ -8,20 +8,11 @@ import SongEditView from "./SongEditView";
 export default function ChordEditor({ lyrics, chords, setChords }) {
   // vars
   const {
-    lyricsLines,
-    chordLines,
+    lyricsAndChords,
     chords: updatedChords,
     addChordAtLine,
   } = useChordify(lyrics, chords);
   const [currentChord, setCurrentChord] = useState("A");
-
-  let chordIndex = 0;
-  let lyricsAndChords = [];
-  lyricsLines.forEach((lyricLine) => {
-    lyricsAndChords.push(chordLines[chordIndex]);
-    lyricsAndChords.push(lyricLine);
-    chordIndex++;
-  });
   //
   const handleSelection = (position, index) => {
     addChordAtLine(index, currentChord, position);
@@ -35,7 +26,7 @@ export default function ChordEditor({ lyrics, chords, setChords }) {
         updateChord={(updatedChord) => setCurrentChord(updatedChord)}
       />
       <ScrollView style={styles.mainContainer}>
-        {lyricsAndChords.map((lrcsAndChrds, index) =>
+        {lyricsAndChords.split("\n").map((lrcsAndChrds, index) =>
           index % 2 !== 0 ? (
             <TextInput
               key={index}
