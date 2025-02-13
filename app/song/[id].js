@@ -35,7 +35,10 @@ export default function SongView() {
   // define the distance to scroll
   const scrollDistance =
     lyricSize > scrollViewHeight ? lyricSize - scrollViewHeight : lyricSize;
-  const { lyricsAndChords } = useChordify(song?.lyrics, song?.chords);
+  const { lyricsAndChords, chordLines, lyrics } = useChordify(
+    song?.lyrics,
+    song?.chords,
+  );
   // functions for scrolling
   const handleAutoscrollButton = () => {
     setAutoscroll(!autoscroll);
@@ -123,7 +126,10 @@ export default function SongView() {
           <MyText style={styles.headerText}>{song?.title}</MyText>
           <MyText>{song?.artist}</MyText>
         </View>
-        <MyText style={styles.lyricText}>{lyricsAndChords}</MyText>
+        <View style={styles.lyricsAndChordContainer}>
+          <MyText style={styles.lyricText}>{lyrics}</MyText>
+          <MyText style={styles.chordText}>{chordLines}</MyText>
+        </View>
       </ScrollView>
 
       <FloatingButton
@@ -164,8 +170,22 @@ const styles = StyleSheet.create({
   },
   lyricText: {
     ...defaultStyles.middleText,
-    lineHeight: 24,
+    lineHeight: 48,
     margin: 8,
     fontFamily: monoSpaceFamily,
+  },
+
+  chordText: {
+    position: "absolute",
+    top: -20,
+    left: 0,
+    ...defaultStyles.middleText,
+    lineHeight: 48,
+    margin: 8,
+    fontFamily: monoSpaceFamily,
+  },
+  lyricsAndChordContainer: {
+    marginTop: 20,
+    marginBottom: -20,
   },
 });

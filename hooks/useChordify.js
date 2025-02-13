@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 
-const chordLineWidth = 48; // each line must have this max chars
+const emptyChar = "\u2007"; // each line must have this max chars
 export default function useChordify(lyrics, _chords) {
   // states
   const [chordLines, setChordLines] = useState(
-    toLines(lyrics).map((line) => " ".repeat(chordLineWidth)),
-  ); // u could use get rid of it and use just chords
+    toLines(lyrics).map((line) => emptyChar.repeat(line.length)),
+  );
   const [chords, setChords] = useState(_chords ? _chords : {});
   const [lyricsAndChords, setLyricsAndChords] = useState("");
   // useEffect
@@ -35,7 +35,9 @@ export default function useChordify(lyrics, _chords) {
   useEffect(() => {
     let newChordLines = [];
     if (lyrics) {
-      newChordLines = toLines(lyrics).map((line) => " ".repeat(chordLineWidth));
+      newChordLines = toLines(lyrics).map((line) =>
+        emptyChar.repeat(line.length),
+      );
     }
     if (_chords) {
       const organizedChords = groupByPosition(_chords);
@@ -89,12 +91,12 @@ export default function useChordify(lyrics, _chords) {
   // inserts per state
   function addChordAtLine(lineIndex, chord, position) {
     const newChords = groupByPosition(chords); // change object distribution to find quick by position, at end restart the original order
+    let totalCharByIndex = 0;
     const newChordLines = chordLines.map((chordLine, chordIndex) => {
       // see if the position to add the chord has occupied its neighbors and himself
       const actualPosition =
-        position -
-        Math.floor(chord.length / 2) +
-        (chordLineWidth + 1) * lineIndex; // +1 is the \n in each line -> position + lineWidth * NthLine
+        position - Math.floor(chord.length / 2) + totalCharByIndex;
+      totalCharByIndex += chordLine.length + 1;
       if (chordIndex === lineIndex) {
         if (newChords[actualPosition]) {
           const oldChord = newChords[actualPosition];
@@ -116,7 +118,8 @@ export default function useChordify(lyrics, _chords) {
     setChordLines(newChordLines);
   }
   return {
-    chordLines,
+    lyrics: lyrics,
+    chordLines: chordLines.join("\n"),
     lyricsAndChords,
     chords,
     addChordAtLine,
@@ -145,7 +148,7 @@ function isPositionValid(line, chord, position) {
     .every(
       (c, index) =>
         line.at(startPosition + index) === "" ||
-        line.at(startPosition + index) === " ",
+        line.at(startPosition + index) === emptyChar,
     );
   return returnValue;
 }

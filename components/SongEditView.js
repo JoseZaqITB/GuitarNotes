@@ -32,7 +32,7 @@ export default function SongEditView({ updateChord }) {
         <View style={styles.chordsContainer}>
           <TouchableOpacity
             style={styles.chordButton}
-            onPress={() => updateChord(" ")}
+            onPress={() => updateChord("\u2007")}
           >
             <MyText style={styles.text}>🚫</MyText>
           </TouchableOpacity>
