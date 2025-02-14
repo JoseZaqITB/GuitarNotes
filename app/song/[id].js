@@ -24,6 +24,7 @@ export default function SongView() {
   const songList = useSongList();
   const titleAndAuthor = id.split("-");
   const [song, setSong] = useState("");
+  const [currentBtn, setCurrentBtn] = useState("none");
   // use states for scrolling
   const scrollY = useRef(new Animated.Value(0)).current; // Animated value for Y-axis
   const [showConfigMenu, setShowConfigMenu] = React.useState(false);
@@ -40,6 +41,19 @@ export default function SongView() {
     song?.chords,
   );
   // functions for scrolling
+  const handleButton = (btnName) => {
+    switch (btnName) {
+      case "settings":
+        handleConfigButton();
+        break;
+      case "autoscroll":
+        handleAutoscrollButton();
+      default:
+        break;
+    }
+    if (currentBtn !== btnName) setCurrentBtn(btnName);
+    else setCurrentBtn("none");
+  };
   const handleAutoscrollButton = () => {
     setAutoscroll(!autoscroll);
   };
@@ -133,16 +147,28 @@ export default function SongView() {
       </ScrollView>
 
       <FloatingButton
-        style={{ right: 20, bottom: 20 + 64 + 16 }}
-        onPress={handleConfigButton}
+        style={{
+          right: 20,
+          bottom: 20 + 36 + 8,
+          backgroundColor:
+            currentBtn === "settings" ? colors.light.textSecondary : undefined,
+        }}
+        onPress={() => handleButton("settings")}
       >
-        <Image source={confIcon} />
+        <Image style={styles.floatingBtn} source={confIcon} />
       </FloatingButton>
       <FloatingButton
-        style={{ right: 20, bottom: 20 }}
-        onPress={handleAutoscrollButton}
+        style={{
+          right: 20,
+          bottom: 20,
+          backgroundColor:
+            currentBtn === "autoscroll"
+              ? colors.light.textSecondary
+              : undefined,
+        }}
+        onPress={() => handleButton("autoscroll")}
       >
-        <Image source={arrowIcon} />
+        <Image style={styles.floatingBtn} source={arrowIcon} />
       </FloatingButton>
       {showConfigMenu && (
         <ConfigModal
@@ -187,5 +213,9 @@ const styles = StyleSheet.create({
   lyricsAndChordContainer: {
     marginTop: 20,
     marginBottom: -20,
+  },
+  floatingBtn: {
+    width: 24,
+    height: 24,
   },
 });
