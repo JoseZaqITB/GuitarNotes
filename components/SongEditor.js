@@ -1,21 +1,31 @@
 // info
 import { colors, defaultStyles } from "../style/defaultStyles";
 // editor
-import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  Button,
+  Image,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 // main
 import PagerView from "react-native-pager-view";
 import saveIcon from "../assets/save.png";
 import penIcon from "../assets/pen.png";
+import arrowBackIcon from "../assets/arrow_back.png";
 import chordIcon from "../assets/chord.png";
 import { router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
 import MyText from "./MyText";
 import ChordEditor from "./ChordEditor";
+import ConfirmModal from "./ConfirmModal";
 
 export default function SongEditor({ song = {} }) {
   // add save button
   const navigation = useNavigation();
+  const [showBackPopUp, setShowBackPopUp] = useState(false);
   const [title, setTitle] = useState(song.title || "");
   const [artist, setArtist] = useState(song.artist || "");
   const [tag, setTag] = useState(song.tag || "");
@@ -41,6 +51,9 @@ export default function SongEditor({ song = {} }) {
             <ImgButton handler={handleSaveSong} icon={saveIcon} />
           </View>
         ),
+      headerLeft: () => (
+        <ImgButton handler={handleGoBack} icon={arrowBackIcon} />
+      ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -53,7 +66,9 @@ export default function SongEditor({ song = {} }) {
     currentPage,
     isChordEdition,
   ]);
-
+  const handleGoBack = () => {
+    setShowBackPopUp(true);
+  };
   const handleSaveSong = () => {
     // make sure all fields are filled
     if (!title.trim() || !lyrics.trim()) {
@@ -88,65 +103,79 @@ export default function SongEditor({ song = {} }) {
   const ImgButton = ({ icon, handler }) => {
     return (
       <Pressable onPress={handler}>
-        <Image source={icon} />
+        <Image
+          source={icon}
+          style={{
+            width: 24,
+            height: 24,
+          }}
+        />
       </Pressable>
     );
   };
 
   return (
-    <PagerView
-      initialPage={0}
-      style={{ flex: 1 }}
-      onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
-    >
-      <View style={styles.mainContainer}>
-        <View style={styles.inputContainer}>
-          <MyText style={titleStyle}>Title</MyText>
-          <TextInput
-            value={title}
-            style={styles.customInput}
-            placeholder={"My best Song"}
-            placeholderTextColor={colors.light.textSecondary}
-            onChangeText={setTitle}
-          />
+    <>
+      <ConfirmModal
+        visible={showBackPopUp}
+        message="Do you really wanna go back, without saving changes?"
+        onConfirm={() => navigation.goBack()}
+        onCancel={() => setShowBackPopUp(false)}
+      />
+      <PagerView
+        initialPage={0}
+        style={{ flex: 1 }}
+        onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
+      >
+        <View style={styles.mainContainer}>
+          <View style={styles.inputContainer}>
+            <MyText style={titleStyle}>Title</MyText>
+            <TextInput
+              value={title}
+              style={styles.customInput}
+              placeholder={"My best Song"}
+              placeholderTextColor={colors.light.textSecondary}
+              onChangeText={setTitle}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <MyText style={titleStyle}>Artist</MyText>
+            <TextInput
+              style={styles.customInput}
+              value={artist}
+              placeholder={"Mysel-Fish Band"}
+              onChangeText={setArtist}
+              placeholderTextColor={colors.light.textSecondary}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <MyText style={titleStyle}>Tag</MyText>
+            <TextInput
+              style={styles.customInput}
+              value={tag}
+              placeholder={"Indie"}
+              onChangeText={setTag}
+              placeholderTextColor={colors.light.textSecondary}
+            />
+          </View>
         </View>
-        <View style={styles.inputContainer}>
-          <MyText style={titleStyle}>Artist</MyText>
-          <TextInput
-            style={styles.customInput}
-            value={artist}
-            placeholder={"Mysel-Fish Band"}
-            onChangeText={setArtist}
-            placeholderTextColor={colors.light.textSecondary}
+        {isChordEdition ? (
+          <ChordEditor
+            lyrics={lyrics}
+            chords={chords}
+            setChords={(newChords) => setChords(newChords)}
           />
-        </View>
-        <View style={styles.inputContainer}>
-          <MyText style={titleStyle}>Tag</MyText>
+        ) : (
           <TextInput
-            style={styles.customInput}
-            value={tag}
-            placeholder={"Indie"}
-            onChangeText={setTag}
-            placeholderTextColor={colors.light.textSecondary}
+            value={lyrics}
+            placeholder="A full fish soul with an empty song..."
+            style={styles.textInput}
+            onChangeText={setLyrics}
+            multiline
           />
-        </View>
-      </View>
-      {isChordEdition ? (
-        <ChordEditor
-          lyrics={lyrics}
-          chords={chords}
-          setChords={(newChords) => setChords(newChords)}
-        />
-      ) : (
-        <TextInput
-          value={lyrics}
-          placeholder="A full fish soul with an empty song..."
-          style={styles.textInput}
-          onChangeText={setLyrics}
-          multiline
-        />
-      )}
-    </PagerView>
+        )}
+      </PagerView>
+    </>
   );
 }
 
