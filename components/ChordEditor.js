@@ -3,7 +3,7 @@ import { colors, defaultStyles } from "../style/defaultStyles";
 import useChordify from "../hooks/useChordify";
 import MyText from "./MyText";
 import { useEffect, useState } from "react";
-import SongEditView from "./SongEditView";
+import ChordBoard from "./ChordBoard";
 
 export default function ChordEditor({ lyrics, chords, setChords }) {
   // vars
@@ -22,8 +22,9 @@ export default function ChordEditor({ lyrics, chords, setChords }) {
   useEffect(() => setChords(updatedChords), [updatedChords]);
   return (
     <>
-      <SongEditView
+      <ChordBoard
         updateChord={(updatedChord) => setCurrentChord(updatedChord)}
+        currentChord={currentChord}
       />
       <ScrollView style={styles.mainContainer}>
         {lyricsAndChords.split("\n").map((lrcsAndChrds, index) =>

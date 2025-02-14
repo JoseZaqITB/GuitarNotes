@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
-import MyText from "../components/MyText";
+import MyText from "./MyText";
 import { colors, defaultStyles } from "../style/defaultStyles";
 
-export default function SongEditView({ updateChord }) {
+export default function ChordBoard({ updateChord, currentChord }) {
   const [showAllChords, setShowAllChords] = useState(false);
   const switchShowAllChords = () => {
     setShowAllChords(!showAllChords);
@@ -37,13 +37,22 @@ export default function SongEditView({ updateChord }) {
             <MyText style={styles.text}>🚫</MyText>
           </TouchableOpacity>
           {displayedChords.map((value, index) => (
-            <TouchableOpacity
+            <Pressable
               key={index + value}
-              style={styles.chordButton}
               onPress={() => updateChord(value)}
+              android_ripple
+              style={({ pressed }) => [
+                {
+                  backgroundColor:
+                    pressed || currentChord === value
+                      ? colors.light.textSecondary
+                      : "transparent",
+                },
+                styles.chordButton,
+              ]}
             >
               <MyText style={styles.text}>{value}</MyText>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </View>
@@ -51,13 +60,21 @@ export default function SongEditView({ updateChord }) {
         <View style={styles.allChordsContainer}>
           {showAllChords &&
             allChords.map((value, index) => (
-              <TouchableOpacity
+              <Pressable
                 key={index + value}
-                style={styles.chordButton}
+                style={({ pressed }) => [
+                  {
+                    backgroundColor:
+                      pressed || currentChord === value
+                        ? colors.light.textSecondary
+                        : "transparent",
+                  },
+                  styles.chordButton,
+                ]}
                 onPress={() => updateChord(value)}
               >
                 <MyText style={styles.text}>{value}</MyText>
-              </TouchableOpacity>
+              </Pressable>
             ))}
         </View>
         <Pressable onPress={() => switchShowAllChords()}>
@@ -93,18 +110,23 @@ const styles = StyleSheet.create({
   chordButton: {
     width: buttonSize,
     height: buttonSize,
-    marginHorizontal: 4,
+    marginHorizontal: 2,
+    marginVertical: 2,
+    borderRadius: 4,
   },
   text: {
     ...defaultStyles.text,
-    margin: 4,
+    margin: "auto",
+    fontWeight: "bold",
   },
   allChordsContainer: {
+    display: "flex",
+    flexDirection: "row",
+    maxWidth: (buttonSize + 16) * 6,
+    margin: "auto",
+    justifyContent: "center",
     flexWrap: "wrap",
-    alignItems: "center",
-    alignContent: "center",
-
-    maxHeight: buttonSize * 6,
+    borderTopWidth: 1,
   },
   lyricsContainer: {
     flex: 0.9,

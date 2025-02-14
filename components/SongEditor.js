@@ -1,14 +1,7 @@
 // info
 import { colors, defaultStyles } from "../style/defaultStyles";
 // editor
-import {
-  Button,
-  Image,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
 // main
 import PagerView from "react-native-pager-view";
 import saveIcon from "../assets/save.png";
