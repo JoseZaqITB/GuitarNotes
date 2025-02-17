@@ -9,11 +9,37 @@ import penIcon from "../assets/pen.png";
 import arrowBackIcon from "../assets/arrow_back.png";
 import chordIcon from "../assets/chord.png";
 import { router, useNavigation } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
 import MyText from "./MyText";
 import ChordEditor from "./ChordEditor";
 import ConfirmModal from "./ConfirmModal";
+
+// or useReducer purposes
+function reducer(state, action) {
+  switch (action.type) {
+    case "TYPE":
+      return {
+        undoStack: [...state.undoStack, state.lyrics],
+        lyrics: action.payload,
+        redoStack: [],
+      };
+    case "UNDO":
+      return {
+        undoStack: state.undoStack.slice(0, -1),
+        lyrics: state.undoStack[state.undoStack.length - 1],
+        redoStack: [...state.redoStack, state.lyrics],
+      };
+    case "REDO":
+      return {
+        undoStack: [...state.undoStack, state.lyrics],
+        lyrics: state.redoStack[state.redoStack.length - 1],
+        redoStack: state.redoStack.slice(0, -1),
+      };
+    default:
+      return state;
+  }
+}
 
 export default function SongEditor({ song = {} }) {
   // add save button
@@ -22,7 +48,12 @@ export default function SongEditor({ song = {} }) {
   const [title, setTitle] = useState(song.title || "");
   const [artist, setArtist] = useState(song.artist || "");
   const [tag, setTag] = useState(song.tag || "");
-  const [lyrics, setLyrics] = useState(song.lyrics || "");
+  const [state, dispatch] = useReducer(reducer, {
+    undoStack: [],
+    lyrics: song.lyrics || "",
+    redoStack: [],
+  });
+
   const [chords, setChords] = useState(song.chords || {});
   const [currentPage, setCurrentPage] = useState(0);
   const [isChordEdition, setIsChordEdition] = useState(false);
@@ -54,7 +85,7 @@ export default function SongEditor({ song = {} }) {
     title,
     artist,
     tag,
-    lyrics,
+    state.lyrics,
     chords,
     currentPage,
     isChordEdition,
@@ -64,7 +95,7 @@ export default function SongEditor({ song = {} }) {
   };
   const handleSaveSong = () => {
     // make sure all fields are filled
-    if (!title.trim() || !lyrics.trim()) {
+    if (!title.trim() || !state.lyrics.trim()) {
       alert("Please fill at least title and lyrics");
       return;
     }
@@ -77,7 +108,7 @@ export default function SongEditor({ song = {} }) {
     // capitalize title, artist, and tag // TODO
     // if is song passed, update the song
     if (song.id) {
-      UpdateSongAsync(song.id, title, artist, lyrics, chords, tag)
+      UpdateSongAsync(song.id, title, artist, state.lyrics, chords, tag)
         .then(() => {
           alert(`Song Updated!\n${title}\n${artist}`);
           router.navigate("/", { relativeToDirectory: false });
@@ -85,7 +116,7 @@ export default function SongEditor({ song = {} }) {
         .catch((err) => alert(err));
     } else {
       // save the song and show errors
-      AddSongAsync(title, artist, lyrics, chords, tag)
+      AddSongAsync(title, artist, state.lyrics, chords, tag)
         .then((song) => {
           alert(`New Song Added!\n${song.title}\n${song.artist}`);
           router.navigate("/", { relativeToDirectory: false });
@@ -106,7 +137,6 @@ export default function SongEditor({ song = {} }) {
       </Pressable>
     );
   };
-
   return (
     <>
       <ConfirmModal
@@ -154,18 +184,34 @@ export default function SongEditor({ song = {} }) {
         </View>
         {isChordEdition ? (
           <ChordEditor
-            lyrics={lyrics}
+            lyrics={state.lyrics}
             chords={chords}
             setChords={(newChords) => setChords(newChords)}
           />
         ) : (
-          <TextInput
-            value={lyrics}
-            placeholder="A full fish soul with an empty song..."
-            style={styles.textInput}
-            onChangeText={setLyrics}
-            multiline
-          />
+          <>
+            <TextInput
+              value={state.lyrics}
+              placeholder="A full fish soul with an empty song..."
+              style={styles.textInput}
+              onChangeText={(text) => dispatch({ type: "TYPE", payload: text })}
+              multiline
+            />
+            <Pressable
+              style={{ position: "absolute", bottom: 0, left: 64 }}
+              disabled={state.undoStack.length === 0}
+              onPress={() => dispatch({ type: "UNDO" })}
+            >
+              <MyText>Undo</MyText>
+            </Pressable>
+            <Pressable
+              style={{ position: "absolute", bottom: 0, left: 120 }}
+              disabled={state.redoStack.length === 0}
+              onPress={() => dispatch({ type: "REDO" })}
+            >
+              <MyText>Redo</MyText>
+            </Pressable>
+          </>
         )}
       </PagerView>
     </>

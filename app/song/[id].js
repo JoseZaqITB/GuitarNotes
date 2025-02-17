@@ -36,10 +36,7 @@ export default function SongView() {
   // define the distance to scroll
   const scrollDistance =
     lyricSize > scrollViewHeight ? lyricSize - scrollViewHeight : lyricSize;
-  const { lyricsAndChords, chordLines, lyrics } = useChordify(
-    song?.lyrics,
-    song?.chords,
-  );
+  const { chordLines, lyrics } = useChordify(song?.lyrics, song?.chords);
   // functions for scrolling
   const handleButton = (btnName) => {
     switch (btnName) {
