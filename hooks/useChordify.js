@@ -88,6 +88,26 @@ export default function useChordify(lyrics, _chords) {
         .replace(/\w/g, " ") + line.slice(Number(position + chord.length));
     return line.slice(0, position) + newSubLine;
   }
+  // get chord by index line and position in line
+  function getChordAtLine(lineIndex, chord, position) {
+    let returnValue = emptyChar;
+    let totalCharByIndex = 0;
+    const groupedChords = groupByPosition(chords); // change object distribution to find quick by position, at end restart the original order
+
+    chordLines.forEach((chordLine, chordIndex) => {
+      // see if the position to add the chord has occupied its neighbors and himself
+      const actualPosition =
+        position - Math.floor(chord.length / 2) + totalCharByIndex;
+      totalCharByIndex += chordLine.length + 1;
+      if (chordIndex === lineIndex) {
+        if (groupedChords[actualPosition]) {
+          returnValue = groupedChords[actualPosition];
+          return;
+        }
+      }
+    });
+    return returnValue;
+  }
   // inserts per state
   function addChordAtLine(lineIndex, chord, position) {
     const newChords = groupByPosition(chords); // change object distribution to find quick by position, at end restart the original order
@@ -123,6 +143,7 @@ export default function useChordify(lyrics, _chords) {
     lyricsAndChords,
     chords,
     addChordAtLine,
+    getChordAtLine,
   };
 }
 
