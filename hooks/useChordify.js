@@ -3,55 +3,42 @@ import { useEffect, useState } from "react";
 const emptyChar = "\u2007"; // each line must have this max chars
 export default function useChordify(lyrics, _chords) {
   // states
-  const [chordLines, setChordLines] = useState(
-    toLines(lyrics).map((line) => emptyChar.repeat(line.length)),
+  const [chordString, setChordString] = useState(
+    toLines(lyrics)
+      .map((line) => emptyChar.repeat(line.length))
+      .join("\n"),
   );
   const [chords, setChords] = useState(_chords ? _chords : {});
-  const [lyricsAndChords, setLyricsAndChords] = useState("");
   // useEffect
   useEffect(() => {
     if (chords === _chords) {
-      const organizedChords = groupByPosition(chords);
-      const updatedChordLines = updateChordLines(organizedChords, chordLines);
-      setChordLines(updatedChordLines);
+      const organizedChords = { ...chords };
+      const updatedChordString = updateChordString(
+        organizedChords,
+        chordString,
+      );
+      setChordString(updatedChordString);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // updade lyricsAndChords each time Chord/lyrics-line changes
   useEffect(() => {
-    let chordIndex = 0;
-    let newLyricsAndChords = [];
-    const lyricsLines = toLines(lyrics);
-    lyricsLines.forEach((lyricLine) => {
-      newLyricsAndChords.push(chordLines[chordIndex]);
-      newLyricsAndChords.push(lyricLine);
-      chordIndex++;
-    });
-    setLyricsAndChords(newLyricsAndChords.join("\n"));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chordLines]);
-
-  useEffect(() => {
-    let newChordLines = [];
+    let newChordString = chordString;
     if (lyrics) {
-      newChordLines = toLines(lyrics).map((line) =>
-        emptyChar.repeat(line.length),
-      );
+      newChordString = toLines(lyrics)
+        .map((line) => emptyChar.repeat(line.length))
+        .join("\n");
     }
     if (_chords) {
-      const organizedChords = groupByPosition(_chords);
-      const updatedChordLines = updateChordLines(
-        organizedChords,
-        newChordLines,
-      );
+      const updatedChordString = updateChordString(_chords, newChordString);
       setChords(_chords);
-      setChordLines(updatedChordLines);
+      setChordString(updatedChordString);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lyrics, _chords]);
 
-  const updateChordLines = (chords, chordLines) => {
-    let chordStr = chordLines.join("\n").split("");
+  const updateChordString = (chords, chordString) => {
+    let chordStr = chordString.split("");
     Object.entries(chords).forEach((keyValue) =>
       keyValue[1]
         .split("")
@@ -59,7 +46,7 @@ export default function useChordify(lyrics, _chords) {
           (char, index) => (chordStr[Number(keyValue[0]) + index] = char),
         ),
     );
-    return chordStr.join("").split("\n");
+    return chordStr.join("");
   };
   // allows to insert a substring in a string at a given position
   /**
@@ -79,71 +66,54 @@ export default function useChordify(lyrics, _chords) {
       string.slice(restStringStartIndex);
     return newStr;
   }
-
-  // remove a string by position
-  function removeStringByIndex(line, chord, position) {
+  // replace a string by position
+  function replaceStringByIndex(string, oldSubstr, newSubstr, position) {
     const newSubLine =
-      line
-        .slice(position, Number(position + chord.length))
-        .replace(/\w/g, " ") + line.slice(Number(position + chord.length));
-    return line.slice(0, position) + newSubLine;
+      string
+        .slice(position, Number(position + oldSubstr.length))
+        .replace(/\w/g, newSubstr) +
+      string.slice(Number(position + oldSubstr.length));
+    return string.slice(0, position) + newSubLine;
   }
   // get chord by index line and position in line
-  function getChordAtLine(lineIndex, chord, position) {
-    let returnValue = emptyChar;
-    let totalCharByIndex = 0;
-    const groupedChords = groupByPosition(chords); // change object distribution to find quick by position, at end restart the original order
-
-    chordLines.forEach((chordLine, chordIndex) => {
-      // see if the position to add the chord has occupied its neighbors and himself
-      const actualPosition =
-        position - Math.floor(chord.length / 2) + totalCharByIndex;
-      totalCharByIndex += chordLine.length + 1;
-      if (chordIndex === lineIndex) {
-        if (groupedChords[actualPosition]) {
-          returnValue = groupedChords[actualPosition];
-          return;
-        }
-      }
-    });
-    return returnValue;
+  function getChordbyPosition(position) {
+    const groupedChords = { ...chords }; // change object distribution to find quick by position, at end restart the original order
+    return groupedChords[position] ? groupedChords[position] : emptyChar;
   }
   // inserts per state
-  function addChordAtLine(lineIndex, chord, position) {
-    const newChords = groupByPosition(chords); // change object distribution to find quick by position, at end restart the original order
-    let totalCharByIndex = 0;
-    const newChordLines = chordLines.map((chordLine, chordIndex) => {
-      // see if the position to add the chord has occupied its neighbors and himself
-      const actualPosition =
-        position - Math.floor(chord.length / 2) + totalCharByIndex;
-      totalCharByIndex += chordLine.length + 1;
-      if (chordIndex === lineIndex) {
-        if (newChords[actualPosition]) {
-          const oldChord = newChords[actualPosition];
-          const removedChordLine = removeStringByIndex(
-            chordLine,
-            oldChord,
-            position,
-          );
-          newChords[actualPosition] = chord;
-          return insertStringByIndex(removedChordLine, chord, position);
-        }
-        if (isPositionValid(chordLine, chord, position)) {
-          newChords[actualPosition] = chord;
-          return insertStringByIndex(chordLine, chord, position);
-        } else return chordLine;
-      } else return chordLine;
-    });
-    setChords(groupByChords(newChords));
-    setChordLines(newChordLines);
+  function addChord(chord, position) {
+    const chordInPos = chordString[position];
+    let newChordString = "";
+    const newChords = { ...chords };
+    if (chordInPos) {
+      // remove chord in text
+      newChordString = replaceStringByIndex(
+        chordString,
+        chordInPos,
+        chord,
+        position,
+      );
+      // add new chord in chord list
+      newChords[position] = chord;
+    } else if (isPositionValid(chordString, chord, position)) {
+      // add new chord in chord list
+      newChords[position] = chord;
+      // add new chord in the chord text
+      newChordString = insertStringByIndex(chordString, chord, position);
+    } else {
+      // is an invalid position for adding a chord
+      return;
+    }
+    // update changes
+    setChords(newChords);
+    setChordString(newChordString);
   }
   return {
     lyrics: lyrics,
-    chordLines: chordLines.join("\n"),
-    lyricsAndChords,
+    chordString,
     chords,
-    addChordAtLine,
-    getChordAtLine,
+    addChord,
+    getChordbyPosition,
   };
 }
 

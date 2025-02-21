@@ -36,7 +36,8 @@ export default function SongView() {
   // define the distance to scroll
   const scrollDistance =
     lyricSize > scrollViewHeight ? lyricSize - scrollViewHeight : lyricSize;
-  const { chordLines, lyrics } = useChordify(song?.lyrics, song?.chords);
+  const { chordString } = useChordify(song?.lyrics, song?.chords);
+  console.log("estoy afuera! " + chordString);
   // functions for scrolling
   const handleButton = (btnName) => {
     switch (btnName) {
@@ -138,8 +139,8 @@ export default function SongView() {
           <MyText>{song?.artist}</MyText>
         </View>
         <View style={styles.lyricsAndChordContainer}>
-          <MyText style={styles.lyricText}>{lyrics}</MyText>
-          <MyText style={styles.chordText}>{chordLines}</MyText>
+          <MyText style={styles.lyricText}>{song?.lyrics}</MyText>
+          <MyText style={styles.chordText}>{chordString}</MyText>
         </View>
       </ScrollView>
 

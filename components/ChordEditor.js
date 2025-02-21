@@ -3,6 +3,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
   TextInput,
 } from "react-native";
 import { colors, defaultStyles } from "../style/defaultStyles";
@@ -27,12 +28,10 @@ function reducer(state, action) {
       };
     case "TAP":
       const oldChord = {
-        index: action.payload.index,
         chord: action.payload.oldChord,
         position: action.payload.position,
       };
       const newChord = {
-        index: action.payload.index,
         chord: action.payload.newChord,
         position: action.payload.position,
       };
@@ -57,10 +56,10 @@ function reducer(state, action) {
 export default function ChordEditor({ lyrics, chords, setChords }) {
   // vars
   const {
-    lyricsAndChords,
     chords: updatedChords,
-    addChordAtLine,
-    getChordAtLine,
+    chordString,
+    addChord,
+    getChordbyPosition,
   } = useChordify(lyrics, chords);
   const [currentChord, setCurrentChord] = useState("A");
   //
@@ -69,30 +68,25 @@ export default function ChordEditor({ lyrics, chords, setChords }) {
     current: [],
     redoStack: [],
   });
-  const handleSelection = (position, chordIndex, lyricsAndChordsIndex) => {
-    addChordAtLine(chordIndex, currentChord, position);
+  const handleSelection = (position) => {
+    addChord(currentChord, position);
     dispatch({
       type: "TAP",
       payload: {
-        index: chordIndex,
-        oldChord: getChordAtLine(chordIndex, currentChord, position),
+        oldChord: getChordbyPosition(position),
         newChord: currentChord,
         position,
       },
     });
   };
   const handleRedo = () => {
-    console.log(state);
-
     const redoChord = state.redoStack[state.redoStack.length - 1];
-    addChordAtLine(redoChord.index, redoChord.chord, redoChord.position);
+    addChord(redoChord.chord, redoChord.position);
     dispatch({ type: "REDO" });
   };
   const handleUndo = () => {
-    console.log(state);
-
     const undoChord = state.undoStack[state.undoStack.length - 1];
-    addChordAtLine(undoChord.index, undoChord.chord, undoChord.position);
+    addChord(undoChord.chord, undoChord.position);
     dispatch({ type: "UNDO" });
   };
   //
@@ -105,33 +99,21 @@ export default function ChordEditor({ lyrics, chords, setChords }) {
         currentChord={currentChord}
       />
       <ScrollView style={styles.mainContainer}>
-        {lyricsAndChords.split("\n").map((lrcsAndChrds, index) =>
-          index % 2 !== 0 ? (
-            <TextInput
-              key={index}
-              style={styles.textInput}
-              onSelectionChange={(e) =>
-                handleSelection(
-                  e.nativeEvent.selection.start,
-                  -1 +
-                    (index + 1) /
-                      2 /* index is not the real index for lyrics maps, it's just the peers index  */,
-                  index,
-                )
-              }
-              selection={0} // define a value avoiding placed the caret at the end of the text when first tapped. and be able to add a chord since the first tap
-              selectTextOnFocus={false}
-              showSoftInputOnFocus={false}
-              contextMenuHidden
-              caretHidden
-              value={lrcsAndChrds}
-            />
-          ) : (
-            <MyText key={Math.random() * 100} style={styles.chordText}>
-              {lrcsAndChrds}
-            </MyText>
-          ),
-        )}
+        <MyText style={styles.chordText}>{chordString}</MyText>
+        <TextInput
+          onSelectionChange={(e) =>
+            handleSelection(e.nativeEvent.selection.start)
+          }
+          autoFocus
+          selectTextOnFocus={false}
+          showSoftInputOnFocus={false}
+          contextMenuHidden
+          caretHidden
+          multiline
+          scrollEnabled={false}
+        >
+          <Text style={styles.textInput}>{lyrics}</Text>
+        </TextInput>
       </ScrollView>
       <Pressable
         style={{ position: "absolute", bottom: 0, left: 64 }}
@@ -155,6 +137,10 @@ export default function ChordEditor({ lyrics, chords, setChords }) {
 const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // choose monospace font by OS
 const styles = StyleSheet.create({
   chordText: {
+    position: "absolute",
+    top: -20,
+    left: 0,
+    lineHeight: 48,
     fontFamily: monoSpaceFamily,
     ...defaultStyles.smallText,
   },
@@ -162,6 +148,7 @@ const styles = StyleSheet.create({
     margin: 16,
   },
   textInput: {
+    lineHeight: 48,
     fontFamily: monoSpaceFamily,
     ...defaultStyles.smallText,
     color: colors.light.textPrimary,
