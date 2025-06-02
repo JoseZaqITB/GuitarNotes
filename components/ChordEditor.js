@@ -104,8 +104,6 @@ export default function ChordEditor({ lyrics, chords }) {
 
   // update chord string to storage when chord changes ( useful when save button is pressed)
   useEffect(() => {
-    console.log(_chords);
-    console.log(chordString);
     if (_chords) storeChords(_chords);
   }, [chordString, _chords]);
   return (

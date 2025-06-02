@@ -25,6 +25,7 @@ export default function SongView() {
   const titleAndAuthor = id.split("-");
   const [song, setSong] = useState("");
   const [currentBtn, setCurrentBtn] = useState("none");
+  let chordIndex = -2; // -1 per whitespaces and -1 per char = -3
   // use states for scrolling
   const scrollY = useRef(new Animated.Value(0)).current; // Animated value for Y-axis
   const [showConfigMenu, setShowConfigMenu] = React.useState(false);
@@ -115,6 +116,7 @@ export default function SongView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollViewHeight, lyricSize]);
 
+  if (typeof song === "undefined") return <></>;
   return (
     <>
       <ScrollView
@@ -138,8 +140,46 @@ export default function SongView() {
           <MyText>{song?.artist}</MyText>
         </View>
         <View style={styles.lyricsAndChordContainer}>
-          <MyText style={styles.lyricText}>{song?.lyrics}</MyText>
-          <MyText style={styles.chordText}>{chordString}</MyText>
+          {song?.lyrics?.split("\n").map((row) => {
+            return (
+              <View style={styles.lyricRowContainer}>
+                {row.split(" ").map((word, wordIndex) => {
+                  chordIndex++;
+                  return (
+                    <View
+                      style={styles.lyricWordContainer}
+                      key={wordIndex + word}
+                    >
+                      {word.split("").map((char) => {
+                        chordIndex++;
+                        if (song?.chords[chordIndex])
+                          return (
+                            <View
+                              style={styles.lyricCharContainer}
+                              key={chordIndex}
+                            >
+                              <MyText style={styles.lyricText}>{char}</MyText>
+                              <MyText style={styles.chordText}>
+                                {song?.chords[chordIndex]}
+                              </MyText>
+                            </View>
+                          );
+                        else
+                          return (
+                            <View
+                              style={styles.lyricCharContainer}
+                              key={chordIndex}
+                            >
+                              <MyText style={styles.lyricText}>{char}</MyText>
+                            </View>
+                          );
+                      })}
+                    </View>
+                  );
+                })}
+              </View>
+            );
+          })}
         </View>
       </ScrollView>
 
@@ -194,7 +234,7 @@ const styles = StyleSheet.create({
   lyricText: {
     ...defaultStyles.middleText,
     lineHeight: 48,
-    margin: 8,
+    marginHorizontal: 0,
     fontWeight: "bold",
     fontFamily: monoSpaceFamily,
   },
@@ -203,15 +243,31 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -20,
     left: 0,
-    ...defaultStyles.middleText,
     lineHeight: 48,
-    margin: 8,
+    ...defaultStyles.middleText,
     fontWeight: "bold",
     fontFamily: monoSpaceFamily,
   },
   lyricsAndChordContainer: {
     marginTop: 20,
-    marginBottom: -20,
+    marginBottom: 10,
+    marginHorizontal: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  lyricCharContainer: {
+    margin: 0,
+    padding: 0,
+    alignItems: "center",
+  },
+  lyricWordContainer: {
+    flexDirection: "row",
+    marginHorizontal: 8,
+    marginVertical: 0,
+  },
+  lyricRowContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
   floatingBtn: {
     width: 24,
