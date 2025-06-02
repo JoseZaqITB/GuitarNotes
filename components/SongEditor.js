@@ -14,7 +14,7 @@ import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
 import MyText from "./MyText";
 import ChordEditor from "./ChordEditor";
 import ConfirmModal from "./ConfirmModal";
-
+import { getChords } from "../stores/songStorage";
 // or useReducer purposes
 function reducer(state, action) {
   switch (action.type) {
@@ -54,7 +54,6 @@ export default function SongEditor({ song = {} }) {
     redoStack: [],
   });
 
-  const [chords, setChords] = useState(song.chords || {});
   const [currentPage, setCurrentPage] = useState(0);
   const [isChordEdition, setIsChordEdition] = useState(false);
   // set a saveButton to the header and updated each time a state is updated
@@ -86,14 +85,13 @@ export default function SongEditor({ song = {} }) {
     artist,
     tag,
     state.lyrics,
-    chords,
     currentPage,
     isChordEdition,
   ]);
   const handleGoBack = () => {
     setShowBackPopUp(true);
   };
-  const handleSaveSong = () => {
+  const handleSaveSong = async () => {
     // make sure all fields are filled
     if (!title.trim() || !state.lyrics.trim()) {
       alert("Please fill at least title and lyrics");
@@ -107,6 +105,7 @@ export default function SongEditor({ song = {} }) {
     }
     // capitalize title, artist, and tag // TODO
     // if is song passed, update the song
+    const chords = await getChords();
     if (song.id) {
       UpdateSongAsync(song.id, title, artist, state.lyrics, chords, tag)
         .then(() => {
@@ -183,11 +182,7 @@ export default function SongEditor({ song = {} }) {
           </View>
         </View>
         {isChordEdition ? (
-          <ChordEditor
-            lyrics={state.lyrics}
-            chords={chords}
-            setChords={(newChords) => setChords(newChords)}
-          />
+          <ChordEditor lyrics={state.lyrics} chords={song.chords} />
         ) : (
           <>
             <TextInput

@@ -11,19 +11,21 @@ import useChordify from "../hooks/useChordify";
 import MyText from "./MyText";
 import { useEffect, useReducer, useState } from "react";
 import ChordBoard from "./ChordBoard";
+import { storeChords } from "../stores/songStorage";
 
 function reducer(state, action) {
   switch (action.type) {
     case "UNDO":
       return {
         undoStack: state.undoStack.slice(0, -1),
-        current: [
+        oldStack: [
+          ...state.oldStack,
           state.undoStack[state.undoStack.length - 1],
-          ...state.current.slice(0, -1),
         ],
+        newStack: state.newStack.slice(0, -1),
         redoStack: [
           ...state.redoStack,
-          state.current[state.current.length - 1],
+          state.newStack[state.newStack.length - 1],
         ],
       };
     case "TAP":
@@ -37,14 +39,19 @@ function reducer(state, action) {
       };
       return {
         undoStack: [...state.undoStack, oldChord],
-        current: [...state.current, newChord],
+        oldStack: [],
+        newStack: [...state.newStack, newChord],
         redoStack: [],
       };
     case "REDO":
       return {
-        undoStack: [...state.undoStack, state.current[0]],
-        current: [
-          ...state.current.slice(1),
+        undoStack: [
+          ...state.undoStack,
+          state.oldStack[state.oldStack.length - 1],
+        ],
+        oldStack: state.oldStack.slice(0, -1),
+        newStack: [
+          ...state.newStack,
           state.redoStack[state.redoStack.length - 1],
         ],
         redoStack: state.redoStack.slice(0, -1),
@@ -53,19 +60,20 @@ function reducer(state, action) {
       throw new Error("Unknown action");
   }
 }
-export default function ChordEditor({ lyrics, chords, setChords }) {
+export default function ChordEditor({ lyrics, chords }) {
   // vars
   const {
-    chords: updatedChords,
     chordString,
     addChord,
     getChordbyPosition,
+    chords: _chords,
   } = useChordify(lyrics, chords);
-  const [currentChord, setCurrentChord] = useState("A");
+  const [currentChord, setCurrentChord] = useState(" ");
   //
   const [state, dispatch] = useReducer(reducer, {
     undoStack: [],
-    current: [],
+    oldStack: [],
+    newStack: [],
     redoStack: [],
   });
   const handleSelection = (position) => {
@@ -80,18 +88,26 @@ export default function ChordEditor({ lyrics, chords, setChords }) {
     });
   };
   const handleRedo = () => {
+    if (state.redoStack.length === 0) return;
+
     const redoChord = state.redoStack[state.redoStack.length - 1];
     addChord(redoChord.chord, redoChord.position);
     dispatch({ type: "REDO" });
   };
   const handleUndo = () => {
+    if (state.undoStack.length === 0) return;
+
     const undoChord = state.undoStack[state.undoStack.length - 1];
     addChord(undoChord.chord, undoChord.position);
     dispatch({ type: "UNDO" });
   };
-  //
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setChords(updatedChords), [updatedChords]);
+
+  // update chord string to storage when chord changes ( useful when save button is pressed)
+  useEffect(() => {
+    console.log(_chords);
+    console.log(chordString);
+    if (_chords) storeChords(_chords);
+  }, [chordString, _chords]);
   return (
     <>
       <ChordBoard
@@ -117,14 +133,14 @@ export default function ChordEditor({ lyrics, chords, setChords }) {
       </ScrollView>
       <Pressable
         style={{ position: "absolute", bottom: 0, left: 64 }}
-        disabled={state.undoStack.length === 0}
+        disabled={state.undoStack.length <= 0}
         onPress={handleUndo}
       >
         <MyText>Undo</MyText>
       </Pressable>
       <Pressable
         style={{ position: "absolute", bottom: 0, left: 120 }}
-        disabled={state.redoStack.length === 0}
+        disabled={state.redoStack.length <= 0}
         onPress={handleRedo}
       >
         <MyText>Redo</MyText>

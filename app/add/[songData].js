@@ -17,7 +17,8 @@ export default function UpdateSongView() {
       );
       setSong(song);
     });
-  }, [titleAndArtist, setSong]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   if (song === undefined)
     return <ActivityIndicator style={{ flex: 1 }} size="large" />;
   // return view

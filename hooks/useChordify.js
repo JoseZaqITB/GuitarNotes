@@ -1,22 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const emptyChar = "\u2007"; // each line must have this max chars
 export default function useChordify(lyrics, _chords) {
-  // states
-  const [chordString, setChordString] = useState(
-    toLines(lyrics)
-      .map((line) => emptyChar.repeat(line.length))
-      .join("\n"),
+  // vars
+  const emptyChordString = useMemo(
+    () =>
+      toLines(lyrics)
+        .map((line) => emptyChar.repeat(line.length))
+        .join("\n"),
+    [lyrics],
   );
+  // states
+  const [chordString, setChordString] = useState(emptyChordString);
   const [chords, setChords] = useState(_chords ? _chords : {});
   // useEffect
   useEffect(() => {
     if (chords === _chords) {
-      const organizedChords = { ...chords };
-      const updatedChordString = updateChordString(
-        organizedChords,
-        chordString,
-      );
+      const updatedChordString = updateChordString(chords, chordString);
       setChordString(updatedChordString);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -36,6 +36,13 @@ export default function useChordify(lyrics, _chords) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lyrics, _chords]);
+
+  useEffect(() => {
+    // update chordString when chords change
+    const updatedChordString = updateChordString(chords, emptyChordString);
+    setChordString(updatedChordString);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chords]);
 
   const updateChordString = (chords, chordString) => {
     let chordStr = chordString.split("");
@@ -83,31 +90,48 @@ export default function useChordify(lyrics, _chords) {
   // inserts per state
   function addChord(chord, position) {
     const chordInPos = chordString[position];
-    let newChordString = "";
     const newChords = { ...chords };
-    if (chordInPos) {
-      // remove chord in text
-      newChordString = replaceStringByIndex(
-        chordString,
-        chordInPos,
-        chord,
-        position,
-      );
-      // add new chord in chord list
+    /* console.log(chords[position]);
+    console.log(isReplaceValid(chord, position)); */
+    if (chords[position] && isReplaceValid(chord, position)) {
       newChords[position] = chord;
-    } else if (isPositionValid(chordString, chord, position)) {
-      // add new chord in chord list
+    } else if (isPositionValid(chord, position)) {
       newChords[position] = chord;
-      // add new chord in the chord text
-      newChordString = insertStringByIndex(chordString, chord, position);
     } else {
-      // is an invalid position for adding a chord
       return;
     }
     // update changes
     setChords(newChords);
-    setChordString(newChordString);
   }
+
+  function isReplaceValid(chord, position) {
+    const regex = /^\s*$/;
+    if (chord.length > 1) {
+      for (let i = 1; i < chord.length; i++) {
+        const char = chordString.at(position + i);
+        if (!regex.test(char)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * @description Analize if there is a chord already placed in the position given, otherwise return true.
+   * @param {number} position
+   * @param {string} chord
+   * @returns {boolean}
+   **/
+  function isPositionValid(chord, position) {
+    const regex = /^\s*$/;
+    let returnValue = true;
+    returnValue = chord
+      .split("")
+      .every((c, index) => regex.test(chordString.at(position + index)));
+    return returnValue;
+  }
+
   return {
     lyrics: lyrics,
     chordString,
@@ -122,42 +146,3 @@ export function toLines(lyrics) {
   if (lyrics) return lyrics.split("\n");
   return [];
 }
-
-/**
- * @description Analize if there is a chord already placed in the position given, otherwise return true.
- * @param {string} line
- * @param {number} position
- * @param {string} chord
- * @returns {boolean}
- **/
-function isPositionValid(line, chord, position) {
-  let returnValue = true;
-  // see if the position to add the chord has occupied its neighbors
-  const startPosition = position - Math.floor(chord.length / 2);
-  returnValue = chord
-    .split("")
-    .every(
-      (c, index) =>
-        line.at(startPosition + index) === "" ||
-        line.at(startPosition + index) === emptyChar,
-    );
-  return returnValue;
-}
-
-function groupByChords(chords) {
-  const organizedChords = {};
-  Object.entries(chords).forEach((keyValue) => {
-    if (organizedChords[keyValue[1]])
-      organizedChords[keyValue[1]].push(keyValue[0]);
-    else organizedChords[keyValue[1]] = [keyValue[0]];
-  });
-  return organizedChords;
-}
-
-const groupByPosition = (chords) => {
-  const organizedChords = {};
-  Object.entries(chords).forEach((keyValue) =>
-    keyValue[1].forEach((pos) => (organizedChords[pos] = keyValue[0])),
-  );
-  return organizedChords;
-};

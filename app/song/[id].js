@@ -37,7 +37,6 @@ export default function SongView() {
   const scrollDistance =
     lyricSize > scrollViewHeight ? lyricSize - scrollViewHeight : lyricSize;
   const { chordString } = useChordify(song?.lyrics, song?.chords);
-  console.log("estoy afuera! " + chordString);
   // functions for scrolling
   const handleButton = (btnName) => {
     switch (btnName) {
@@ -196,6 +195,7 @@ const styles = StyleSheet.create({
     ...defaultStyles.middleText,
     lineHeight: 48,
     margin: 8,
+    fontWeight: "bold",
     fontFamily: monoSpaceFamily,
   },
 
@@ -206,6 +206,7 @@ const styles = StyleSheet.create({
     ...defaultStyles.middleText,
     lineHeight: 48,
     margin: 8,
+    fontWeight: "bold",
     fontFamily: monoSpaceFamily,
   },
   lyricsAndChordContainer: {
