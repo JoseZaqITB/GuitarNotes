@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  View,
 } from "react-native";
 import { colors, defaultStyles } from "../style/defaultStyles";
 import useChordify from "../hooks/useChordify";
@@ -68,7 +69,10 @@ export default function ChordEditor({ lyrics, chords }) {
     getChordbyPosition,
     chords: _chords,
   } = useChordify(lyrics, chords);
+  let chordIndex = -1; // -1 per whitespaces and -3 per croupchar = -4
+  const [groupPosition, setGroupPosition] = useState({});
   const [currentChord, setCurrentChord] = useState(" ");
+  const [splitLyrics, setSplitLyrics] = useState([[[""]]]);
   //
   const [state, dispatch] = useReducer(reducer, {
     undoStack: [],
@@ -106,6 +110,39 @@ export default function ChordEditor({ lyrics, chords }) {
   useEffect(() => {
     if (_chords) storeChords(_chords);
   }, [chordString, _chords]);
+  useEffect(() => {
+    const groupCharsBy3 = () => {
+      // split text into rows
+      let currentPosition = -2; // -1 per word
+      const _groupPosition = {};
+      const splitText = lyrics.split("\n").map((row, rowIndex) => {
+        // divide the rows into words and group them by 3
+        const rows = row.split(" ").map((word, wordIndex) => {
+          currentPosition++;
+          const chars = word.split("");
+          // Group them by 3
+          const charButtons = chars.reduce((acc, char, index) => {
+            currentPosition++;
+            const groupIndex = Math.floor(index / 3);
+            if (!acc[groupIndex]) {
+              _groupPosition["" + rowIndex + wordIndex + groupIndex] =
+                currentPosition;
+              acc[groupIndex] = char;
+            } else {
+              acc[groupIndex] += char; // this is like join() but done step-by-step
+            }
+            setGroupPosition(_groupPosition); // update groupPosition state
+            return acc; // return grouped chars by 3
+          }, []);
+          return charButtons;
+        });
+        return rows;
+      });
+      return splitText;
+    };
+    setSplitLyrics(groupCharsBy3());
+  }, [lyrics]);
+
   return (
     <>
       <ChordBoard
@@ -113,21 +150,46 @@ export default function ChordEditor({ lyrics, chords }) {
         currentChord={currentChord}
       />
       <ScrollView style={styles.mainContainer}>
-        <MyText style={styles.chordText}>{chordString}</MyText>
-        <TextInput
-          onSelectionChange={(e) =>
-            handleSelection(e.nativeEvent.selection.start)
-          }
-          autoFocus
-          selectTextOnFocus={false}
-          showSoftInputOnFocus={false}
-          contextMenuHidden
-          caretHidden
-          multiline
-          scrollEnabled={false}
-        >
-          <Text style={styles.textInput}>{lyrics}</Text>
-        </TextInput>
+        {splitLyrics.map((row, rowIndex) => {
+          return (
+            <View key={row + rowIndex} style={styles.lyricRowContainer}>
+              {row.map((word, wordIndex) => {
+                chordIndex++;
+                return (
+                  <View
+                    style={styles.lyricWordContainer}
+                    key={wordIndex + word}
+                  >
+                    {word.map((charGroup, groupIndex) => {
+                      const currentChordIndex = chordIndex; // freeze this value for this iteration
+                      chordIndex += charGroup.length;
+                      return (
+                        <Pressable
+                          style={styles.groupCharContainer}
+                          key={rowIndex + wordIndex + groupIndex}
+                          onPress={() =>
+                            handleSelection(
+                              groupPosition[
+                                "" + rowIndex + wordIndex + groupIndex
+                              ],
+                            )
+                          }
+                        >
+                          <MyText style={styles.lyricText}>{charGroup}</MyText>
+                          {_chords[currentChordIndex] && (
+                            <MyText style={styles.chordText}>
+                              {_chords[currentChordIndex]}
+                            </MyText>
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                );
+              })}
+            </View>
+          );
+        })}
       </ScrollView>
       <Pressable
         style={{ position: "absolute", bottom: 0, left: 64 }}
@@ -150,11 +212,46 @@ export default function ChordEditor({ lyrics, chords }) {
 // styles
 const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // choose monospace font by OS
 const styles = StyleSheet.create({
+  lyricsAndChordContainer: {
+    marginTop: 20,
+    marginBottom: 10,
+    marginHorizontal: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  chordButton: {
+    borderWidth: 1,
+  },
+  lyricCharContainer: {
+    margin: 0,
+    padding: 0,
+    alignItems: "center",
+  },
+  groupCharContainer: {
+    flexDirection: "row",
+    borderWidth: 1,
+  },
+  lyricWordContainer: {
+    flexDirection: "row",
+    marginHorizontal: 8,
+    marginVertical: 0,
+  },
+  lyricRowContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  lyricText: {
+    ...defaultStyles.smallText,
+    lineHeight: 48,
+    marginHorizontal: 0,
+    fontFamily: monoSpaceFamily,
+  },
   chordText: {
     position: "absolute",
     top: -20,
     left: 0,
     lineHeight: 48,
+    fontWeight: "bold",
     fontFamily: monoSpaceFamily,
     ...defaultStyles.smallText,
   },

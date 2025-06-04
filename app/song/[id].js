@@ -25,7 +25,7 @@ export default function SongView() {
   const titleAndAuthor = id.split("-");
   const [song, setSong] = useState("");
   const [currentBtn, setCurrentBtn] = useState("none");
-  let chordIndex = -2; // -1 per whitespaces and -1 per char = -3
+  let chordIndex = -2; // -1 per whitespaces and -1 per char = -2
   // use states for scrolling
   const scrollY = useRef(new Animated.Value(0)).current; // Animated value for Y-axis
   const [showConfigMenu, setShowConfigMenu] = React.useState(false);
@@ -140,9 +140,9 @@ export default function SongView() {
           <MyText>{song?.artist}</MyText>
         </View>
         <View style={styles.lyricsAndChordContainer}>
-          {song?.lyrics?.split("\n").map((row) => {
+          {song?.lyrics?.split("\n").map((row, rowIndex) => {
             return (
-              <View style={styles.lyricRowContainer}>
+              <View key={row + rowIndex} style={styles.lyricRowContainer}>
                 {row.split(" ").map((word, wordIndex) => {
                   chordIndex++;
                   return (
