@@ -15,6 +15,8 @@ import MyText from "./MyText";
 import ChordEditor from "./ChordEditor";
 import ConfirmModal from "./ConfirmModal";
 import { getChords } from "../stores/songStorage";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+
 // or useReducer purposes
 function reducer(state, action) {
   switch (action.type) {
@@ -62,16 +64,29 @@ export default function SongEditor({ song = {} }) {
       headerRight: () =>
         currentPage === 1 ? (
           <View style={styles.headerButtonsContainer}>
-            <ImgButton
-              handler={() => setIsChordEdition(!isChordEdition)}
-              icon={isChordEdition ? penIcon : chordIcon}
-            />
+            <Pressable onPress={() => setIsChordEdition(!isChordEdition)}>
+              <FontAwesome5
+                name="edit"
+                size={24}
+                color={colors.light.textPrimary}
+              />
+            </Pressable>
             <View style={{ width: 16 }} />
-            <ImgButton handler={handleSaveSong} icon={saveIcon} />
+            <Pressable onPress={handleSaveSong}>
+              <FontAwesome5
+                name="save"
+                size={24}
+                color={colors.light.textPrimary}
+              />
+            </Pressable>
           </View>
         ) : (
           <View style={styles.headerButtonsContainer}>
-            <ImgButton handler={handleSaveSong} icon={saveIcon} />
+            <FontAwesome5
+              name="save"
+              size={24}
+              color={colors.light.textPrimary}
+            />
           </View>
         ),
       headerLeft: () => (
@@ -184,7 +199,7 @@ export default function SongEditor({ song = {} }) {
         {isChordEdition ? (
           <ChordEditor lyrics={state.lyrics} chords={song.chords} />
         ) : (
-          <>
+          <View style={styles.textEditionContainer}>
             <TextInput
               value={state.lyrics}
               placeholder="A full fish soul with an empty song..."
@@ -192,21 +207,29 @@ export default function SongEditor({ song = {} }) {
               onChangeText={(text) => dispatch({ type: "TYPE", payload: text })}
               multiline
             />
-            <Pressable
-              style={{ position: "absolute", bottom: 0, left: 64 }}
-              disabled={state.undoStack.length === 0}
-              onPress={() => dispatch({ type: "UNDO" })}
-            >
-              <MyText>Undo</MyText>
-            </Pressable>
-            <Pressable
-              style={{ position: "absolute", bottom: 0, left: 120 }}
-              disabled={state.redoStack.length === 0}
-              onPress={() => dispatch({ type: "REDO" })}
-            >
-              <MyText>Redo</MyText>
-            </Pressable>
-          </>
+            <View style={styles.undoRedoContainer}>
+              <Pressable
+                disabled={state.undoStack.length <= 0}
+                onPress={() => dispatch({ type: "UNDO" })}
+              >
+                <FontAwesome5
+                  name="undo-alt"
+                  size={16}
+                  color={colors.light.textPrimary}
+                />
+              </Pressable>
+              <Pressable
+                disabled={state.redoStack.length <= 0}
+                onPress={() => dispatch({ type: "REDO" })}
+              >
+                <FontAwesome5
+                  name="redo-alt"
+                  size={16}
+                  color={colors.light.textPrimary}
+                />
+              </Pressable>
+            </View>
+          </View>
         )}
       </PagerView>
     </>
@@ -249,12 +272,23 @@ const styles = StyleSheet.create({
     ...defaultStyles.middleText,
     color: colors.light.textPrimary,
     textAlignVertical: "top",
-    minHeight: "100%", // right?. when no text, text keeps in size of container
+    minHeight: "90%", // right?. when no text, text keeps in size of container
     padding: 16,
   },
   headerButtonsContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+  },
+  undoRedoContainer: {
+    alignContent: "flex-end",
+    alignItems: "flex-end",
+    alignSelf: "center",
+    flexDirection: "row",
+    gap: 8,
+    padding: 8,
+  },
+  textEditionContainer: {
     justifyContent: "space-between",
   },
 });

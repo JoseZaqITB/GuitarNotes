@@ -13,6 +13,7 @@ import MyText from "./MyText";
 import { useEffect, useReducer, useState } from "react";
 import ChordBoard from "./ChordBoard";
 import { storeChords } from "../stores/songStorage";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -191,20 +192,22 @@ export default function ChordEditor({ lyrics, chords }) {
           );
         })}
       </ScrollView>
-      <Pressable
-        style={{ position: "absolute", bottom: 0, left: 64 }}
-        disabled={state.undoStack.length <= 0}
-        onPress={handleUndo}
-      >
-        <MyText>Undo</MyText>
-      </Pressable>
-      <Pressable
-        style={{ position: "absolute", bottom: 0, left: 120 }}
-        disabled={state.redoStack.length <= 0}
-        onPress={handleRedo}
-      >
-        <MyText>Redo</MyText>
-      </Pressable>
+      <View style={styles.undoRedoContainer}>
+        <Pressable disabled={state.undoStack.length <= 0} onPress={handleUndo}>
+          <FontAwesome5
+            name="undo-alt"
+            size={16}
+            color={colors.light.textPrimary}
+          />
+        </Pressable>
+        <Pressable disabled={state.redoStack.length <= 0} onPress={handleRedo}>
+          <FontAwesome5
+            name="redo-alt"
+            size={16}
+            color={colors.light.textPrimary}
+          />
+        </Pressable>
+      </View>
     </>
   );
 }
@@ -219,9 +222,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
   },
-  chordButton: {
-    borderWidth: 1,
-  },
+  chordButton: {},
   lyricCharContainer: {
     margin: 0,
     padding: 0,
@@ -229,7 +230,6 @@ const styles = StyleSheet.create({
   },
   groupCharContainer: {
     flexDirection: "row",
-    borderWidth: 1,
   },
   lyricWordContainer: {
     flexDirection: "row",
@@ -264,5 +264,11 @@ const styles = StyleSheet.create({
     ...defaultStyles.smallText,
     color: colors.light.textPrimary,
     textAlignVertical: "top",
+  },
+  undoRedoContainer: {
+    alignSelf: "center",
+    flexDirection: "row",
+    gap: 8,
+    padding: 8,
   },
 });
