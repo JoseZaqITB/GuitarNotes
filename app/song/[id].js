@@ -2,6 +2,7 @@ import {
   Animated,
   Image,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -15,7 +16,6 @@ import React, { useEffect, useRef, useState } from "react";
 import ConfigModal from "../../components/ConfigModal";
 import { colors, defaultStyles } from "../../style/defaultStyles";
 import useSongList from "../../hooks/songList";
-import useChordify from "../../hooks/useChordify";
 
 export default function SongView() {
   // vars
@@ -37,7 +37,6 @@ export default function SongView() {
   // define the distance to scroll
   const scrollDistance =
     lyricSize > scrollViewHeight ? lyricSize - scrollViewHeight : lyricSize;
-  const { chordString } = useChordify(song?.lyrics, song?.chords);
   // functions for scrolling
   const handleButton = (btnName) => {
     switch (btnName) {
@@ -182,40 +181,48 @@ export default function SongView() {
           })}
         </View>
       </ScrollView>
+      <View style={styles.floatingBtnContainer}>
+        <Pressable
+          style={{
+            backgroundColor:
+              currentBtn === "settings"
+                ? colors.light.textSecondary
+                : undefined,
+            borderRadius: 14,
+            elevation: 8,
+            margin: 8,
+            padding: 4,
+          }}
+          onPress={() => handleButton("settings")}
+        >
+          <Image style={styles.floatingBtn} source={confIcon} />
+        </Pressable>
+        <Pressable
+          style={{
+            backgroundColor:
+              currentBtn === "autoscroll"
+                ? colors.light.textSecondary
+                : undefined,
+            borderRadius: 14,
+            elevation: 8,
+            margin: 8,
+            padding: 4,
+          }}
+          onPress={() => handleButton("autoscroll")}
+        >
+          <Image style={styles.floatingBtn} source={arrowIcon} />
+        </Pressable>
+      </View>
 
-      <FloatingButton
-        style={{
-          right: 20,
-          bottom: 20 + 36 + 8,
-          backgroundColor:
-            currentBtn === "settings" ? colors.light.textSecondary : undefined,
-        }}
-        onPress={() => handleButton("settings")}
-      >
-        <Image style={styles.floatingBtn} source={confIcon} />
-      </FloatingButton>
-      <FloatingButton
-        style={{
-          right: 20,
-          bottom: 20,
-          backgroundColor:
-            currentBtn === "autoscroll"
-              ? colors.light.textSecondary
-              : undefined,
-        }}
-        onPress={() => handleButton("autoscroll")}
-      >
-        <Image style={styles.floatingBtn} source={arrowIcon} />
-      </FloatingButton>
-      {showConfigMenu && (
-        <ConfigModal
-          title={titleAndAuthor[0]}
-          author={titleAndAuthor[1]}
-          id={song.id}
-          scrollDuration={scrollDuration}
-          setScrollDuration={setScrollDuration}
-        />
-      )}
+      <ConfigModal
+        visible={showConfigMenu}
+        title={titleAndAuthor[0]}
+        author={titleAndAuthor[1]}
+        id={song.id}
+        scrollDuration={scrollDuration}
+        setScrollDuration={setScrollDuration}
+        onClose={() => handleButton("settings")}
+      />
     </>
   );
 }
@@ -272,5 +279,12 @@ const styles = StyleSheet.create({
   floatingBtn: {
     width: 24,
     height: 24,
+  },
+  floatingBtnContainer: {
+    position: "absolute",
+    flexDirection: "column",
+    bottom: 0,
+    right: 0,
+    padding: 16,
   },
 });

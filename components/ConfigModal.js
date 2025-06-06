@@ -1,4 +1,11 @@
-import { Image, Pressable, View } from "react-native";
+import {
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import MyText from "./MyText";
 import penIcon from "../assets/pen.png";
 import trashIcon from "../assets/trash.png";
@@ -7,7 +14,7 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import ConfirmModal from "./ConfirmModal";
 import { DeleteSongByidAsync } from "../hooks/songList";
-import { defaultStyles } from "../style/defaultStyles";
+import { colors, defaultStyles } from "../style/defaultStyles";
 
 export default function ConfigModal({
   id,
@@ -15,6 +22,8 @@ export default function ConfigModal({
   author,
   scrollDuration,
   setScrollDuration,
+  onClose,
+  visible,
 }) {
   const [modalVisible, setModalVisible] = useState(false);
   const handleDeleteSong = () => {
@@ -23,86 +32,78 @@ export default function ConfigModal({
     router.navigate("/");
   };
   return (
-    <>
-      <View
-        style={{
-          position: "absolute",
-          minWidth: 200,
-          minHeight: 200,
-          width: "60%",
-          height: "30%",
-          backgroundColor: "rgba(0, 103, 152, 1)",
-
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 16,
-          bottom: 64 + 64,
-          right: 20 + 64 + 16,
-          borderRadius: 8,
-          elevation: 24,
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-          }}
-        >
-          {/* <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MyText>Key </MyText>
-          <Pressable>
-            <MyText>G</MyText>
-          </Pressable>
-        </View> */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginVertical: 4,
-            }}
-          >
-            <MyText style={defaultStyles.middleText}>Edit Song: </MyText>
-            <Link href={`/add/${title}-${author}`} asChild>
-              <Pressable>
-                <Image source={penIcon} width={18} height={18} />
-              </Pressable>
-            </Link>
-            <Pressable onPress={() => setModalVisible(!modalVisible)}>
-              <Image
-                source={trashIcon}
-                width={28}
-                height={28}
-                tintColor={"red"}
-                style={{ width: 28, height: 28 }}
-              />
+    <Modal
+      transparent={true}
+      animationType="fade"
+      visible={visible}
+      onRequestClose={onClose} // Ha  ndle back button on Android
+    >
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay}>
+          <View style={styles.dialogBox}>
+            <View
+              style={{
+                flex: 1,
+              }}
+            >
+              {/* <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <MyText>Key </MyText>
+            <Pressable>
+              <MyText>G</MyText>
             </Pressable>
-          </View>
-          <View style={{ marginVertical: 4 }}>
-            <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-              <MyText style={defaultStyles.middleText}>
-                Autoscroll speed:{" "}
-              </MyText>
-              <MyText>{GetMinFromMil(scrollDuration)}</MyText>
+          </View> */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginVertical: 4,
+                }}
+              >
+                <MyText style={defaultStyles.middleText}>Edit Song: </MyText>
+                <Link href={`/add/${title}-${author}`} asChild>
+                  <Pressable>
+                    <Image source={penIcon} width={18} height={18} />
+                  </Pressable>
+                </Link>
+                <Pressable onPress={() => setModalVisible(!modalVisible)}>
+                  <Image
+                    source={trashIcon}
+                    width={28}
+                    height={28}
+                    tintColor={"red"}
+                    style={{ width: 28, height: 28 }}
+                  />
+                </Pressable>
+              </View>
+              <View style={{ marginVertical: 4 }}>
+                <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+                  <MyText style={defaultStyles.middleText}>
+                    Autoscroll speed:{" "}
+                  </MyText>
+                  <MyText>{GetMinFromMil(scrollDuration)}</MyText>
+                </View>
+                <Slider
+                  style={{ width: 200, height: 40 }}
+                  step={1}
+                  value={scrollDuration}
+                  minimumValue={1000} // milliseconds
+                  maximumValue={1000 * 60 * 8} // millisecons * seconds * minutes
+                  minimumTrackTintColor="#FFFFFF"
+                  maximumTrackTintColor="#000000"
+                  onValueChange={(value) => setScrollDuration(value)}
+                />
+              </View>
             </View>
-            <Slider
-              style={{ width: 200, height: 40 }}
-              step={1}
-              value={scrollDuration}
-              minimumValue={1000} // milliseconds
-              maximumValue={1000 * 60 * 8} // millisecons * seconds * minutes
-              minimumTrackTintColor="#FFFFFF"
-              maximumTrackTintColor="#000000"
-              onValueChange={(value) => setScrollDuration(value)}
-            />
           </View>
+          <ConfirmModal
+            visible={modalVisible}
+            message="Do you really wanna delete the song?"
+            onConfirm={handleDeleteSong}
+            onCancel={() => setModalVisible(false)}
+          />
         </View>
-      </View>
-      <ConfirmModal
-        visible={modalVisible}
-        message="Do you really wanna delete the song?"
-        onConfirm={handleDeleteSong}
-        onCancel={() => setModalVisible(false)}
-      />
-    </>
+      </TouchableWithoutFeedback>
+    </Modal>
   );
 }
 
@@ -114,3 +115,20 @@ function GetMinFromMil(miliseconds) {
   const minutes = total_minutes % 60;
   return `${minutes}:${seconds < 10 ? 0 : ""}${seconds}`; // could be more simplified
 }
+
+// styles
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    padding: 36,
+  },
+  dialogBox: {
+    flexDirection: "row",
+    backgroundColor: colors.light.primary,
+    borderRadius: 8,
+    padding: 16,
+    elevation: 5,
+  },
+});
