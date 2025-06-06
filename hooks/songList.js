@@ -52,7 +52,7 @@ export async function GetListSongAsync() {
 }
 export async function WriteSongListAsync(newSongList) {
   // verify if each object has id, title, artist, lyrics and tag keys
-  const keys = ["id", "title", "artist", "lyrics", "tag"];
+  const keys = ["id", "title", "artist", "lyrics", "chords", "tag"];
   const hasAllKeys = newSongList.every((song) =>
     keys.every((key) => key in song),
   );
@@ -75,9 +75,25 @@ function createEmptySongList() {
   return WriteSongListAsync(songList);
 }
 // add & remove list
-export async function AddSongAsync(title, artist, lyrics, tag) {
+/**
+ * @description add song in device
+ * @param {string} title
+ * @param {string} artist
+ * @param {string} lyrics
+ * @param {Object} chords
+ * @param {string[]} tag
+ * @returns
+ */
+export async function AddSongAsync(title, artist, lyrics, chords, tag) {
   try {
-    const newSong = { id: CreateRandomId(title), title, artist, lyrics, tag };
+    const newSong = {
+      id: CreateRandomId(title),
+      title,
+      artist,
+      lyrics,
+      chords,
+      tag,
+    };
     const songList = await GetListSongAsync();
     if (!songList) createEmptySongList();
     await WriteSongListAsync([...songList, newSong]);
@@ -97,8 +113,18 @@ export async function DeleteSongByidAsync(id) {
     throw error; // Re-throw to handle it at a higher level if needed
   }
 }
-export async function UpdateSongAsync(id, title, artist, lyrics, tag) {
-  const newSong = { id, title, artist, lyrics, tag };
+/**
+ * update a song by id
+ * @param {number} id
+ * @param {string} title
+ * @param {string} artist
+ * @param {string} lyrics
+ * @param {string} chords
+ * @param {string} tag
+ * @returns
+ */
+export async function UpdateSongAsync(id, title, artist, lyrics, chords, tag) {
+  const newSong = { id, title, artist, lyrics, chords, tag };
   const songList = await GetListSongAsync();
   const _newJsonFile = songList.map((song, _index) =>
     song.id === id ? newSong : song,

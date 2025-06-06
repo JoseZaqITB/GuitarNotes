@@ -1,4 +1,11 @@
-import { Animated, Image, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Animated,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import confIcon from "../../assets/conf.png";
 import arrowIcon from "../../assets/arrow.png";
@@ -8,6 +15,7 @@ import React, { useEffect, useRef, useState } from "react";
 import ConfigModal from "../../components/ConfigModal";
 import { colors, defaultStyles } from "../../style/defaultStyles";
 import useSongList from "../../hooks/songList";
+import useChordify from "../../hooks/useChordify";
 
 export default function SongView() {
   // vars
@@ -16,6 +24,8 @@ export default function SongView() {
   const songList = useSongList();
   const titleAndAuthor = id.split("-");
   const [song, setSong] = useState("");
+  const [currentBtn, setCurrentBtn] = useState("none");
+  let chordIndex = -2; // -1 per whitespaces and -1 per char = -2
   // use states for scrolling
   const scrollY = useRef(new Animated.Value(0)).current; // Animated value for Y-axis
   const [showConfigMenu, setShowConfigMenu] = React.useState(false);
@@ -27,7 +37,21 @@ export default function SongView() {
   // define the distance to scroll
   const scrollDistance =
     lyricSize > scrollViewHeight ? lyricSize - scrollViewHeight : lyricSize;
+  const { chordString } = useChordify(song?.lyrics, song?.chords);
   // functions for scrolling
+  const handleButton = (btnName) => {
+    switch (btnName) {
+      case "settings":
+        handleConfigButton();
+        break;
+      case "autoscroll":
+        handleAutoscrollButton();
+      default:
+        break;
+    }
+    if (currentBtn !== btnName) setCurrentBtn(btnName);
+    else setCurrentBtn("none");
+  };
   const handleAutoscrollButton = () => {
     setAutoscroll(!autoscroll);
   };
@@ -92,6 +116,7 @@ export default function SongView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollViewHeight, lyricSize]);
 
+  if (typeof song === "undefined") return <></>;
   return (
     <>
       <ScrollView
@@ -114,20 +139,73 @@ export default function SongView() {
           <MyText style={styles.headerText}>{song?.title}</MyText>
           <MyText>{song?.artist}</MyText>
         </View>
-        <MyText style={styles.lyricText}>{song?.lyrics}</MyText>
+        <View style={styles.lyricsAndChordContainer}>
+          {song?.lyrics?.split("\n").map((row, rowIndex) => {
+            return (
+              <View key={row + rowIndex} style={styles.lyricRowContainer}>
+                {row.split(" ").map((word, wordIndex) => {
+                  chordIndex++;
+                  return (
+                    <View
+                      style={styles.lyricWordContainer}
+                      key={wordIndex + word}
+                    >
+                      {word.split("").map((char) => {
+                        chordIndex++;
+                        if (song?.chords[chordIndex])
+                          return (
+                            <View
+                              style={styles.lyricCharContainer}
+                              key={chordIndex}
+                            >
+                              <MyText style={styles.lyricText}>{char}</MyText>
+                              <MyText style={styles.chordText}>
+                                {song?.chords[chordIndex]}
+                              </MyText>
+                            </View>
+                          );
+                        else
+                          return (
+                            <View
+                              style={styles.lyricCharContainer}
+                              key={chordIndex}
+                            >
+                              <MyText style={styles.lyricText}>{char}</MyText>
+                            </View>
+                          );
+                      })}
+                    </View>
+                  );
+                })}
+              </View>
+            );
+          })}
+        </View>
       </ScrollView>
 
       <FloatingButton
-        style={{ right: 20, bottom: 20 + 64 + 16 }}
-        onPress={handleConfigButton}
+        style={{
+          right: 20,
+          bottom: 20 + 36 + 8,
+          backgroundColor:
+            currentBtn === "settings" ? colors.light.textSecondary : undefined,
+        }}
+        onPress={() => handleButton("settings")}
       >
-        <Image source={confIcon} />
+        <Image style={styles.floatingBtn} source={confIcon} />
       </FloatingButton>
       <FloatingButton
-        style={{ right: 20, bottom: 20 }}
-        onPress={handleAutoscrollButton}
+        style={{
+          right: 20,
+          bottom: 20,
+          backgroundColor:
+            currentBtn === "autoscroll"
+              ? colors.light.textSecondary
+              : undefined,
+        }}
+        onPress={() => handleButton("autoscroll")}
       >
-        <Image source={arrowIcon} />
+        <Image style={styles.floatingBtn} source={arrowIcon} />
       </FloatingButton>
       {showConfigMenu && (
         <ConfigModal
@@ -142,6 +220,7 @@ export default function SongView() {
   );
 }
 
+const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // choose monospace font by OS
 const styles = StyleSheet.create({
   headerContainer: {
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -154,7 +233,44 @@ const styles = StyleSheet.create({
   },
   lyricText: {
     ...defaultStyles.middleText,
-    lineHeight: 24,
-    margin: 8,
+    lineHeight: 48,
+    marginHorizontal: 0,
+    fontWeight: "bold",
+    fontFamily: monoSpaceFamily,
+  },
+
+  chordText: {
+    position: "absolute",
+    top: -20,
+    left: 0,
+    lineHeight: 48,
+    ...defaultStyles.middleText,
+    fontWeight: "bold",
+    fontFamily: monoSpaceFamily,
+  },
+  lyricsAndChordContainer: {
+    marginTop: 20,
+    marginBottom: 10,
+    marginHorizontal: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  lyricCharContainer: {
+    margin: 0,
+    padding: 0,
+    alignItems: "center",
+  },
+  lyricWordContainer: {
+    flexDirection: "row",
+    marginHorizontal: 8,
+    marginVertical: 0,
+  },
+  lyricRowContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  floatingBtn: {
+    width: 24,
+    height: 24,
   },
 });

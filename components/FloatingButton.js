@@ -21,12 +21,12 @@ export default class FloatingButton extends React.Component {
 const styles = StyleSheet.create({
   fab: {
     position: "absolute",
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "rgba(0, 41, 83, 0.3)",
     justifyContent: "center",
     alignItems: "center",
-    elevation: 24,
+    elevation: 16,
   },
 });

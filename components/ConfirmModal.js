@@ -19,11 +19,11 @@ export default function ConfirmModal({
         <View style={styles.dialogBox}>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={onCancel}>
-              <Text style={styles.buttonText}>No</Text>
-            </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={onConfirm}>
               <Text style={styles.buttonText}>Yes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={onCancel}>
+              <Text style={styles.buttonText}>No</Text>
             </TouchableOpacity>
           </View>
         </View>

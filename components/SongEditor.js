@@ -1,37 +1,114 @@
 // info
 import { colors, defaultStyles } from "../style/defaultStyles";
 // editor
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
 // main
 import PagerView from "react-native-pager-view";
 import saveIcon from "../assets/save.png";
+import penIcon from "../assets/pen.png";
+import arrowBackIcon from "../assets/arrow_back.png";
+import chordIcon from "../assets/chord.png";
 import { router, useNavigation } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
 import MyText from "./MyText";
+import ChordEditor from "./ChordEditor";
+import ConfirmModal from "./ConfirmModal";
+import { getChords } from "../stores/songStorage";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+
+// or useReducer purposes
+function reducer(state, action) {
+  switch (action.type) {
+    case "TYPE":
+      return {
+        undoStack: [...state.undoStack, state.lyrics],
+        lyrics: action.payload,
+        redoStack: [],
+      };
+    case "UNDO":
+      return {
+        undoStack: state.undoStack.slice(0, -1),
+        lyrics: state.undoStack[state.undoStack.length - 1],
+        redoStack: [...state.redoStack, state.lyrics],
+      };
+    case "REDO":
+      return {
+        undoStack: [...state.undoStack, state.lyrics],
+        lyrics: state.redoStack[state.redoStack.length - 1],
+        redoStack: state.redoStack.slice(0, -1),
+      };
+    default:
+      return state;
+  }
+}
 
 export default function SongEditor({ song = {} }) {
   // add save button
   const navigation = useNavigation();
+  const [showBackPopUp, setShowBackPopUp] = useState(false);
   const [title, setTitle] = useState(song.title || "");
   const [artist, setArtist] = useState(song.artist || "");
   const [tag, setTag] = useState(song.tag || "");
-  const [lyrics, setLyrics] = useState(song.lyrics || "");
+  const [state, dispatch] = useReducer(reducer, {
+    undoStack: [],
+    lyrics: song.lyrics || "",
+    redoStack: [],
+  });
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isChordEdition, setIsChordEdition] = useState(false);
   // set a saveButton to the header and updated each time a state is updated
   useEffect(() => {
-    navigation.setOptions({ headerRight: () => <SaveButton /> });
-  }, [navigation, title, artist, tag, lyrics]);
-
-  const handleSaveSong = () => {
+    navigation.setOptions({
+      headerRight: () =>
+        currentPage === 1 ? (
+          <View style={styles.headerButtonsContainer}>
+            <Pressable onPress={() => setIsChordEdition(!isChordEdition)}>
+              <FontAwesome5
+                name="edit"
+                size={24}
+                color={colors.light.textPrimary}
+              />
+            </Pressable>
+            <View style={{ width: 16 }} />
+            <Pressable onPress={handleSaveSong}>
+              <FontAwesome5
+                name="save"
+                size={24}
+                color={colors.light.textPrimary}
+              />
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.headerButtonsContainer}>
+            <FontAwesome5
+              name="save"
+              size={24}
+              color={colors.light.textPrimary}
+            />
+          </View>
+        ),
+      headerLeft: () => (
+        <ImgButton handler={handleGoBack} icon={arrowBackIcon} />
+      ),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    navigation,
+    title,
+    artist,
+    tag,
+    state.lyrics,
+    currentPage,
+    isChordEdition,
+  ]);
+  const handleGoBack = () => {
+    setShowBackPopUp(true);
+  };
+  const handleSaveSong = async () => {
     // make sure all fields are filled
-    if (!title.trim() || !lyrics.trim()) {
+    if (!title.trim() || !state.lyrics.trim()) {
       alert("Please fill at least title and lyrics");
       return;
     }
@@ -43,8 +120,9 @@ export default function SongEditor({ song = {} }) {
     }
     // capitalize title, artist, and tag // TODO
     // if is song passed, update the song
+    const chords = await getChords();
     if (song.id) {
-      UpdateSongAsync(song.id, title, artist, lyrics, tag)
+      UpdateSongAsync(song.id, title, artist, state.lyrics, chords, tag)
         .then(() => {
           alert(`Song Updated!\n${title}\n${artist}`);
           router.navigate("/", { relativeToDirectory: false });
@@ -52,7 +130,7 @@ export default function SongEditor({ song = {} }) {
         .catch((err) => alert(err));
     } else {
       // save the song and show errors
-      AddSongAsync(title, artist, lyrics, tag)
+      AddSongAsync(title, artist, state.lyrics, chords, tag)
         .then((song) => {
           alert(`New Song Added!\n${song.title}\n${song.artist}`);
           router.navigate("/", { relativeToDirectory: false });
@@ -60,58 +138,101 @@ export default function SongEditor({ song = {} }) {
         .catch((err) => alert(err));
     }
   };
-  const SaveButton = () => {
+  const ImgButton = ({ icon, handler }) => {
     return (
-      <Pressable onPress={handleSaveSong}>
-        <Image source={saveIcon} />
+      <Pressable onPress={handler}>
+        <Image
+          source={icon}
+          style={{
+            width: 24,
+            height: 24,
+          }}
+        />
       </Pressable>
     );
   };
-
   return (
-    <PagerView initialPage={0} style={{ flex: 1 }}>
-      <View style={styles.mainContainer}>
-        <View style={styles.inputContainer}>
-          <MyText style={titleStyle}>Title</MyText>
-          <TextInput
-            value={title}
-            style={styles.customInput}
-            placeholder={"My best Song"}
-            placeholderTextColor={colors.light.textSecondary}
-            onChangeText={setTitle}
-          />
+    <>
+      <ConfirmModal
+        visible={showBackPopUp}
+        message="Do you really wanna go back, without saving changes?"
+        onConfirm={() => navigation.goBack()}
+        onCancel={() => setShowBackPopUp(false)}
+      />
+      <PagerView
+        initialPage={0}
+        style={{ flex: 1 }}
+        onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
+      >
+        <View style={styles.mainContainer}>
+          <View style={styles.inputContainer}>
+            <MyText style={titleStyle}>Title</MyText>
+            <TextInput
+              value={title}
+              style={styles.customInput}
+              placeholder={"My best Song"}
+              placeholderTextColor={colors.light.textSecondary}
+              onChangeText={setTitle}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <MyText style={titleStyle}>Artist</MyText>
+            <TextInput
+              style={styles.customInput}
+              value={artist}
+              placeholder={"Mysel-Fish Band"}
+              onChangeText={setArtist}
+              placeholderTextColor={colors.light.textSecondary}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <MyText style={titleStyle}>Tag</MyText>
+            <TextInput
+              style={styles.customInput}
+              value={tag}
+              placeholder={"Indie"}
+              onChangeText={setTag}
+              placeholderTextColor={colors.light.textSecondary}
+            />
+          </View>
         </View>
-        <View style={styles.inputContainer}>
-          <MyText style={titleStyle}>Artist</MyText>
-          <TextInput
-            style={styles.customInput}
-            value={artist}
-            placeholder={"Mysel-Fish Band"}
-            onChangeText={setArtist}
-            placeholderTextColor={colors.light.textSecondary}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <MyText style={titleStyle}>Tag</MyText>
-          <TextInput
-            style={styles.customInput}
-            value={tag}
-            placeholder={"Indie"}
-            onChangeText={setTag}
-            placeholderTextColor={colors.light.textSecondary}
-          />
-        </View>
-      </View>
-      <ScrollView style={styles.lyricsContainer}>
-        <TextInput
-          value={lyrics}
-          placeholder="A full fish soul with an empty song..."
-          style={styles.textInput}
-          onChangeText={setLyrics}
-          multiline
-        />
-      </ScrollView>
-    </PagerView>
+        {isChordEdition ? (
+          <ChordEditor lyrics={state.lyrics} chords={song.chords} />
+        ) : (
+          <View style={styles.textEditionContainer}>
+            <TextInput
+              value={state.lyrics}
+              placeholder="A full fish soul with an empty song..."
+              style={styles.textInput}
+              onChangeText={(text) => dispatch({ type: "TYPE", payload: text })}
+              multiline
+            />
+            <View style={styles.undoRedoContainer}>
+              <Pressable
+                disabled={state.undoStack.length <= 0}
+                onPress={() => dispatch({ type: "UNDO" })}
+              >
+                <FontAwesome5
+                  name="undo-alt"
+                  size={16}
+                  color={colors.light.textPrimary}
+                />
+              </Pressable>
+              <Pressable
+                disabled={state.redoStack.length <= 0}
+                onPress={() => dispatch({ type: "REDO" })}
+              >
+                <FontAwesome5
+                  name="redo-alt"
+                  size={16}
+                  color={colors.light.textPrimary}
+                />
+              </Pressable>
+            </View>
+          </View>
+        )}
+      </PagerView>
+    </>
   );
 }
 
@@ -151,14 +272,24 @@ const styles = StyleSheet.create({
     ...defaultStyles.middleText,
     color: colors.light.textPrimary,
     textAlignVertical: "top",
-    minHeight: "100%", // right?. when no text, text keeps in size of container
+    minHeight: "90%", // right?. when no text, text keeps in size of container
+    padding: 16,
+  },
+  headerButtonsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  undoRedoContainer: {
+    alignContent: "flex-end",
+    alignItems: "flex-end",
+    alignSelf: "center",
+    flexDirection: "row",
+    gap: 8,
+    padding: 8,
+  },
+  textEditionContainer: {
+    justifyContent: "space-between",
   },
 });
 const titleStyle = StyleSheet.flatten(styles.title, styles.text);
-
-// functions
-function formatLyrics(lyrics) {
-  const regexforCommas = /\,/g;
-  const regexforDots = /\.\s*/g;
-  return lyrics?.replace(regexforCommas, ",\n").replace(regexforDots, ".\n\n");
-}
