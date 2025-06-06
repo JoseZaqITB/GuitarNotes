@@ -94,7 +94,11 @@ export default function useChordify(lyrics, _chords) {
     /* console.log(chords[position]);
     console.log(isReplaceValid(chord, position)); */
     if (chords[position] && isReplaceValid(chord, position)) {
-      newChords[position] = chord;
+      // eliminar si el acorde es el de borrar, sino añadir
+      if (chord === emptyChar) {
+        const updatedChords = chords;
+        delete newChords[position];
+      } else newChords[position] = chord;
     } else if (isPositionValid(chord, position)) {
       newChords[position] = chord;
     } else {
@@ -103,7 +107,12 @@ export default function useChordify(lyrics, _chords) {
     // update changes
     setChords(newChords);
   }
-
+  /**
+   * Permite saber si el acorde a colocar va a chocar con otro ya colocado
+   * @param {string} chord
+   * @param {string} position
+   * @returns boolean
+   */
   function isReplaceValid(chord, position) {
     const regex = /^\s*$/;
     if (chord.length > 1) {
