@@ -47,98 +47,79 @@ const title = StyleSheet.compose(styles.text, defaultStyles.title);
  */
 function parseToChordifySong(textSong) {
   let lyrics = "";
-  let chords = {};
+  const chords = {};
   let curChordPos = 0;
-  // split text into lines
-  const lines = textSong.split("\n");
-  // functions
-  const isChordLine = (lineWords) => {
-    return (
-      lineWords.length > 0 && lineWords.every((word) => chordRegex.test(word))
-    );
-  };
-  const makeLinesEqualLength = (line1, line2) => {
-    const maxLength = Math.max(line1.length, line2.length);
-    const paddedLine1 = line1.padEnd(maxLength, " ");
-    const paddedLine2 = line2.padEnd(maxLength, " ");
-    return [paddedLine1, paddedLine2];
-  };
-  const parseToChordPosition = (chordLine) => {
-    const chordPosPair = {};
-    let regex = /\S+/g; // matches non-space sequences
-    let match;
 
-    while ((match = regex.exec(chordLine)) !== null) {
-      chordPosPair[curChordPos + match.index] = match[0];
-    }
-    curChordPos += chordLine.length + 1; // +1 for the space character
-    return chordPosPair;
+  const lines = textSong.split("\n");
+
+  const isChordLine = (words) =>
+    words.length > 0 && words.every((word) => chordRegex.test(word));
+
+  const padLinesToEqualLength = (line1, line2) => {
+    const maxLength = Math.max(line1.length, line2.length);
+    return [line1.padEnd(maxLength), line2.padEnd(maxLength)];
   };
-  const setDoubleChord = (chordLine) => {
-    // put the pad lyric position at the same current chord position
-    lyrics = lyrics.padEnd(lyrics.length + chordLine.length, " ");
+
+  const parseChordLine = (line) => {
+    const regex = /\S+/g;
+    let match;
+    while ((match = regex.exec(line)) !== null) {
+      chords[curChordPos + match.index] = match[0];
+    }
+    curChordPos += line.length + 1;
+  };
+
+  const handleDoubleChord = (line) => {
+    lyrics = lyrics.padEnd(lyrics.length + line.length, " ");
     lyrics += "\n";
   };
-  const setDoubleLyrics = (lyricLineOne, lyricLineTwo) => {
-    // set current chord position at the same padEnd of lyrics
-    curChordPos += lyricLineOne.length + lyricLineTwo.length + 2; // +2 for the newline characters
-    lyrics += lyricLineOne + "\n" + lyricLineTwo + "\n";
+
+  const handleDoubleLyrics = (line1, line2) => {
+    lyrics += line1 + "\n" + line2 + "\n";
+    curChordPos += line1.length + line2.length + 2;
   };
-  // main loop
+
   for (let i = 0; i < lines.length; i++) {
-    if (i + 1 >= lines.length) {
-      const words = lines[i].split(/\s+/).filter(Boolean);
-      const isOneChordLine = isChordLine(words);
-      if (isOneChordLine) {
-        chords = { ...chords, ...parseToChordPosition(lines[i]) };
+    const line1 = lines[i];
+    const line2 = lines[i + 1] ?? "";
+    const words1 = line1.trim().split(/\s+/);
+    const words2 = line2.trim().split(/\s+/);
+
+    const isLine1Chord = isChordLine(words1);
+    const isLine2Chord = isChordLine(words2);
+
+    if (isLine1Chord) {
+      if (!isLine2Chord) {
+        const [chordLine, lyricLine] = padLinesToEqualLength(line1, line2);
+        parseChordLine(chordLine);
+        lyrics += lyricLine + "\n";
+        i++;
       } else {
-        lyrics += lines[i] + "\n";
-      }
-      return { lyrics, chords };
-    }
-    const lineOne = lines[i];
-    const lineTwo = lines[i + 1];
-    // split line into words
-    const words = lineOne.split(/\s+/).filter(Boolean);
-    //// add checking for lines + 1 /////
-    const words2 = lineTwo.split(/\s+/).filter(Boolean);
-    // check if is a chord line ( if there is not a chord word)
-    const isOneChordLine = isChordLine(words);
-    const isTwoChordLine = isChordLine(words2);
-    // branches (lyric&chord pair, doubleChord, doubleLyric, inversePair)
-    if (isOneChordLine) {
-      if (!isTwoChordLine) {
-        const [eqLineOne, eqLineTwo] = makeLinesEqualLength(lineOne, lineTwo);
-        lyrics += eqLineTwo + "\n";
-        chords = { ...chords, ...parseToChordPosition(eqLineOne) };
-      } else {
-        setDoubleChord(lineOne);
-        if (i + 2 < lines.length) {
-          const isThreeChordLine = isChordLine(lines[i + 2].split(/\s/));
-          if (isThreeChordLine) {
-            setDoubleChord(lineTwo);
-          }
+        handleDoubleChord(line1);
+        parseChordLine(line1);
+        if (
+          i + 2 < lines.length &&
+          isChordLine(lines[i + 2].trim().split(/\s+/))
+        ) {
+          handleDoubleChord(line2);
+          parseChordLine(line2);
+        } else {
+          parseChordLine(line2);
         }
-        chords = {
-          ...chords,
-          ...parseToChordPosition(lineOne),
-          ...parseToChordPosition(lineTwo),
-        };
+        i++;
       }
-      i++;
     } else {
-      // if second line is a lyric, sum up the two lines, if not just add the first line
-      if (!isTwoChordLine) {
-        setDoubleLyrics(lineOne, lineTwo);
+      if (!isLine2Chord) {
+        handleDoubleLyrics(line1, line2);
         i++;
       } else if (i + 2 < lines.length) {
-        lyrics += lineOne + "\n";
+        lyrics += line1 + "\n";
         const lineThree = lines[i + 2].split(/\s/);
         if (lineThree.length <= 1 || isChordLine(lineThree)) {
-          chords = { ...chords, ...parseToChordPosition(lineTwo) };
+          parseChordLine(line2);
           i++;
         }
-        curChordPos += lineOne.length + 1;
+        curChordPos += line1.length + 1;
       }
     }
   }
