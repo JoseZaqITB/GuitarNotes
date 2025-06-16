@@ -55,33 +55,6 @@ export default function useChordify(lyrics, _chords) {
     );
     return chordStr.join("");
   };
-  // allows to insert a substring in a string at a given position
-  /**
-   * @param {number} index
-   * @param {string} string
-   * @param {string} substring
-   * @returns {string}
-   */
-  function insertStringByIndex(string, substring, index) {
-    // REPLACE (not add) the string in the position using the needed space
-    const newChordStartIndex = index - Math.floor(substring.length / 2);
-    const restStringStartIndex = index + Math.round(substring.length / 2); // +1(rounding) because the index is included when slicing the string
-
-    const newStr =
-      string.slice(0, newChordStartIndex) +
-      substring +
-      string.slice(restStringStartIndex);
-    return newStr;
-  }
-  // replace a string by position
-  function replaceStringByIndex(string, oldSubstr, newSubstr, position) {
-    const newSubLine =
-      string
-        .slice(position, Number(position + oldSubstr.length))
-        .replace(/\w/g, newSubstr) +
-      string.slice(Number(position + oldSubstr.length));
-    return string.slice(0, position) + newSubLine;
-  }
   // get chord by index line and position in line
   function getChordbyPosition(position) {
     const groupedChords = { ...chords }; // change object distribution to find quick by position, at end restart the original order
@@ -89,14 +62,12 @@ export default function useChordify(lyrics, _chords) {
   }
   // inserts per state
   function addChord(chord, position) {
-    const chordInPos = chordString[position];
     const newChords = { ...chords };
     /* console.log(chords[position]);
     console.log(isReplaceValid(chord, position)); */
     if (chords[position] && isReplaceValid(chord, position)) {
       // eliminar si el acorde es el de borrar, sino añadir
       if (chord === emptyChar) {
-        const updatedChords = chords;
         delete newChords[position];
       } else newChords[position] = chord;
     } else if (isPositionValid(chord, position)) {
