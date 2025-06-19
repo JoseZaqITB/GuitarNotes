@@ -10,7 +10,6 @@ import useChordify from "../hooks/useChordify";
 import MyText from "./MyText";
 import { useEffect, useReducer, useState } from "react";
 import ChordBoard from "./ChordBoard";
-import { storeChords } from "../stores/songStorage";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 function reducer(state, action) {
