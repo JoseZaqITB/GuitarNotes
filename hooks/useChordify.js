@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-const emptyChar = "\u2007"; // each line must have this max chars
+export const emptyChar = "\u2007"; // each line must have this max chars
 export default function useChordify(lyrics, _chords) {
   // vars
   const emptyChordString = useMemo(
@@ -16,7 +16,7 @@ export default function useChordify(lyrics, _chords) {
   // useEffect
   useEffect(() => {
     if (chords === _chords) {
-      const updatedChordString = updateChordString(chords, chordString);
+      const updatedChordString = parseChordString(chords, chordString);
       setChordString(updatedChordString);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -30,7 +30,7 @@ export default function useChordify(lyrics, _chords) {
         .join("\n");
     }
     if (_chords) {
-      const updatedChordString = updateChordString(_chords, newChordString);
+      const updatedChordString = parseChordString(_chords, newChordString);
       setChords(_chords);
       setChordString(updatedChordString);
     }
@@ -39,22 +39,11 @@ export default function useChordify(lyrics, _chords) {
 
   useEffect(() => {
     // update chordString when chords change
-    const updatedChordString = updateChordString(chords, emptyChordString);
+    const updatedChordString = parseChordString(chords, emptyChordString);
     setChordString(updatedChordString);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chords]);
 
-  const updateChordString = (chords, chordString) => {
-    let chordStr = chordString.split("");
-    Object.entries(chords).forEach((keyValue) =>
-      keyValue[1]
-        .split("")
-        .forEach(
-          (char, index) => (chordStr[Number(keyValue[0]) + index] = char),
-        ),
-    );
-    return chordStr.join("");
-  };
   // get chord by index line and position in line
   function getChordbyPosition(position) {
     const groupedChords = { ...chords }; // change object distribution to find quick by position, at end restart the original order
@@ -125,4 +114,15 @@ export default function useChordify(lyrics, _chords) {
 export function toLines(lyrics) {
   if (lyrics) return lyrics.split("\n");
   return [];
+}
+
+// parse to chordString
+export function parseChordString(chords, chordString) {
+  let chordStr = chordString.split("");
+  Object.entries(chords).forEach((keyValue) =>
+    keyValue[1]
+      .split("")
+      .forEach((char, index) => (chordStr[Number(keyValue[0]) + index] = char)),
+  );
+  return chordStr.join("");
 }

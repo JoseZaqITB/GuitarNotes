@@ -1,21 +1,27 @@
 // info
 import { colors, defaultStyles } from "../style/defaultStyles";
 // editor
-import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 // main
 import PagerView from "react-native-pager-view";
-import saveIcon from "../assets/save.png";
-import penIcon from "../assets/pen.png";
 import arrowBackIcon from "../assets/arrow_back.png";
-import chordIcon from "../assets/chord.png";
 import { router, useNavigation } from "expo-router";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
 import MyText from "./MyText";
 import ChordEditor from "./ChordEditor";
 import ConfirmModal from "./ConfirmModal";
-import { getChords } from "../stores/songStorage";
+import { getChords, storeChords } from "../stores/songStorage";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { emptyChar, parseChordString } from "../hooks/useChordify";
 
 // or useReducer purposes
 function reducer(state, action) {
@@ -42,7 +48,6 @@ function reducer(state, action) {
       return state;
   }
 }
-
 export default function SongEditor({ song = {} }) {
   // add save button
   const navigation = useNavigation();
@@ -50,14 +55,24 @@ export default function SongEditor({ song = {} }) {
   const [title, setTitle] = useState(song.title || "");
   const [artist, setArtist] = useState(song.artist || "");
   const [tag, setTag] = useState(song.tag || "");
+  const [lyricLines, setLyricLines] = useState(song.lyrics.split(/\n/) || "");
+  const [chords, setChords] = useState(song.chords || {});
   const [state, dispatch] = useReducer(reducer, {
     undoStack: [],
-    lyrics: song.lyrics || "",
+    lyrics: "",
     redoStack: [],
   });
-
   const [currentPage, setCurrentPage] = useState(0);
   const [isChordEdition, setIsChordEdition] = useState(false);
+  const [editableInput, setEditableInput] = useState(-1);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedLines, setSelectedLines] = useState({});
+  const chordString = useMemo(() => {
+    const emptyChordString = lyricLines
+      .map((line) => emptyChar.repeat(line.length))
+      .join("\n");
+    return parseChordString(chords, emptyChordString).split("\n");
+  }, [lyricLines, chords]);
   // set a saveButton to the header and updated each time a state is updated
   useEffect(() => {
     navigation.setOptions({
@@ -94,21 +109,22 @@ export default function SongEditor({ song = {} }) {
       ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    navigation,
-    title,
-    artist,
-    tag,
-    state.lyrics,
-    currentPage,
-    isChordEdition,
-  ]);
+  }, [navigation, title, artist, tag, lyricLines, currentPage, isChordEdition]);
+  useEffect(() => {
+    storeChords(chords);
+  }, [chords]);
+
+  const handleUpdateChords = (chords) => {
+    storeChords(chords);
+    setChords(chords);
+  };
   const handleGoBack = () => {
     setShowBackPopUp(true);
   };
   const handleSaveSong = async () => {
+    const lyrics = lyricLines.join("\n");
     // make sure all fields are filled
-    if (!title.trim() || !state.lyrics.trim()) {
+    if (!title.trim() || !lyrics.trim()) {
       alert("Please fill at least title and lyrics");
       return;
     }
@@ -122,7 +138,7 @@ export default function SongEditor({ song = {} }) {
     // if is song passed, update the song
     const chords = await getChords();
     if (song.id) {
-      UpdateSongAsync(song.id, title, artist, state.lyrics, chords, tag)
+      UpdateSongAsync(song.id, title, artist, lyrics, chords, tag)
         .then(() => {
           alert(`Song Updated!\n${title}\n${artist}`);
           router.navigate("/", { relativeToDirectory: false });
@@ -130,13 +146,91 @@ export default function SongEditor({ song = {} }) {
         .catch((err) => alert(err));
     } else {
       // save the song and show errors
-      AddSongAsync(title, artist, state.lyrics, chords, tag)
+      AddSongAsync(title, artist, lyrics, chords, tag)
         .then((song) => {
           alert(`New Song Added!\n${song.title}\n${song.artist}`);
           router.navigate("/", { relativeToDirectory: false });
         })
         .catch((err) => alert(err));
     }
+  };
+  const handleOnChangeText = (text, index) => {
+    lyricLines[index] = text.padEnd(lyricLines[index].length, " ");
+  };
+  const handleLongPress = (index) => {
+    setIsSelectionMode(true);
+    setSelectedLines((prev) => ({ ...prev, [index]: true }));
+  };
+  const handlePress = (index) => {
+    if (isSelectionMode)
+      setSelectedLines((prev) => ({ ...prev, [index]: true }));
+    else setEditableInput(index);
+  };
+  const handleDelete = (index) => {
+    //
+    function removeAndShiftChords(chords, lyricLines, selectedLines) {
+      const lineIndices = Object.keys(selectedLines)
+        .map(Number)
+        .sort((a, b) => a - b);
+
+      let charOffset = 0;
+      let removedRanges = []; // [{start, end, length}]
+      let lineOffsets = []; // store char start of each line
+
+      // Step 1: calculate line start offsets and deleted line ranges
+      lyricLines.forEach((line, index) => {
+        lineOffsets.push(charOffset);
+
+        const lineLength = line.length + 1; // +1 for newline or space
+        if (selectedLines[index]) {
+          removedRanges.push({
+            start: charOffset,
+            end: charOffset + line.length,
+            length: lineLength,
+          });
+        }
+
+        charOffset += lineLength;
+      });
+
+      // Step 2: filter chords not in removed ranges and prepare for shifting
+      const remainingChords = {};
+      for (const [posStr, chord] of Object.entries(chords)) {
+        const pos = parseInt(posStr);
+
+        // Check if this chord is in any deleted line range
+        const isDeleted = removedRanges.some(
+          ({ start, end }) => pos >= start && pos <= end,
+        );
+        if (isDeleted) continue;
+
+        // Calculate shift: how much content was removed before this chord
+        const shift = removedRanges
+          .filter(({ end }) => end < pos)
+          .reduce((sum, { length }) => sum + length, 0);
+
+        remainingChords[pos - shift] = chord;
+      }
+
+      return remainingChords;
+    }
+    setChords(removeAndShiftChords(song.chords, lyricLines, selectedLines));
+    //
+    setLyricLines((prev) =>
+      prev.filter((lines, lineIndex) => !selectedLines[lineIndex]),
+    );
+    handleCancelSelection();
+  };
+  const handleUnselect = (index) => {
+    setSelectedLines((prev) => {
+      const updated = { ...prev };
+      delete updated[index];
+      return updated;
+    });
+  };
+  const handleCancelSelection = () => {
+    setSelectedLines([]);
+    setIsSelectionMode(false);
   };
   const ImgButton = ({ icon, handler }) => {
     return (
@@ -197,37 +291,103 @@ export default function SongEditor({ song = {} }) {
           </View>
         </View>
         {isChordEdition ? (
-          <ChordEditor lyrics={state.lyrics} chords={song.chords} />
+          <ChordEditor
+            lyrics={lyricLines.join("\n")}
+            chords={chords}
+            updateChords={handleUpdateChords}
+          />
         ) : (
           <View style={styles.textEditionContainer}>
-            <TextInput
-              value={state.lyrics}
-              placeholder="A full fish soul with an empty song..."
-              style={styles.textInput}
-              onChangeText={(text) => dispatch({ type: "TYPE", payload: text })}
-              multiline
-            />
+            <ScrollView>
+              {lyricLines.map((line, lineIndex) => (
+                <Pressable
+                  key={lineIndex}
+                  onPress={() => handlePress(lineIndex)}
+                  onLongPress={() => handleLongPress(lineIndex)}
+                  style={
+                    isSelectionMode
+                      ? selectedLines[lineIndex]
+                        ? {
+                            ...styles.lineBtnSelection,
+                            ...styles.lineBtnSelected,
+                          }
+                        : styles.lineBtnSelection
+                      : styles.lineBtn
+                  }
+                >
+                  {editableInput === lineIndex && (
+                    <MyText style={styles.chordText}>
+                      {chordString[lineIndex]}
+                    </MyText>
+                  )}
+                  <TextInput
+                    value={line}
+                    placeholder="A full fish soul with an empty song..."
+                    style={
+                      editableInput === lineIndex
+                        ? { ...styles.textInput, ...styles.editableInput }
+                        : styles.textInput
+                    }
+                    onChangeText={(text) => {
+                      dispatch({ type: "TYPE", payload: text });
+                      handleOnChangeText(text, lineIndex);
+                    }}
+                    multiline
+                    readOnly={editableInput !== lineIndex}
+                  />
+                  {isSelectionMode && selectedLines[lineIndex] && (
+                    <Pressable
+                      onPress={() => handleUnselect(lineIndex)}
+                      style={styles.timeIconBtn}
+                    >
+                      <FontAwesome5 name="times" size={16} color={"#900D09"} />
+                    </Pressable>
+                  )}
+                </Pressable>
+              ))}
+            </ScrollView>
             <View style={styles.undoRedoContainer}>
-              <Pressable
-                disabled={state.undoStack.length <= 0}
-                onPress={() => dispatch({ type: "UNDO" })}
-              >
-                <FontAwesome5
-                  name="undo-alt"
-                  size={16}
-                  color={colors.light.textPrimary}
-                />
-              </Pressable>
-              <Pressable
-                disabled={state.redoStack.length <= 0}
-                onPress={() => dispatch({ type: "REDO" })}
-              >
-                <FontAwesome5
-                  name="redo-alt"
-                  size={16}
-                  color={colors.light.textPrimary}
-                />
-              </Pressable>
+              {isSelectionMode ? (
+                <>
+                  <Pressable onPress={handleDelete}>
+                    <FontAwesome5
+                      name="trash"
+                      size={16}
+                      color={colors.light.textPrimary}
+                    />
+                  </Pressable>
+                  <Pressable onPress={handleCancelSelection}>
+                    <FontAwesome5
+                      name="times"
+                      size={16}
+                      color={colors.light.textPrimary}
+                    />
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  <Pressable
+                    disabled={state.undoStack.length <= 0}
+                    onPress={() => dispatch({ type: "UNDO" })}
+                  >
+                    <FontAwesome5
+                      name="undo-alt"
+                      size={16}
+                      color={colors.light.textPrimary}
+                    />
+                  </Pressable>
+                  <Pressable
+                    disabled={state.redoStack.length <= 0}
+                    onPress={() => dispatch({ type: "REDO" })}
+                  >
+                    <FontAwesome5
+                      name="redo-alt"
+                      size={16}
+                      color={colors.light.textPrimary}
+                    />
+                  </Pressable>
+                </>
+              )}
             </View>
           </View>
         )}
@@ -235,6 +395,7 @@ export default function SongEditor({ song = {} }) {
     </>
   );
 }
+const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // choose monospace font by OS
 
 const styles = StyleSheet.create({
   inputContainer: {
@@ -272,8 +433,13 @@ const styles = StyleSheet.create({
     ...defaultStyles.middleText,
     color: colors.light.textPrimary,
     textAlignVertical: "top",
-    minHeight: "90%", // right?. when no text, text keeps in size of container
-    padding: 16,
+    paddingHorizontal: 8,
+    fontFamily: "",
+    flexShrink: 1,
+  },
+  editableInput: {
+    fontFamily: monoSpaceFamily,
+    paddingVertical: 8,
   },
   headerButtonsContainer: {
     flexDirection: "row",
@@ -290,6 +456,32 @@ const styles = StyleSheet.create({
   },
   textEditionContainer: {
     justifyContent: "space-between",
+  },
+  lineBtnSelection: {
+    borderTopWidth: 1,
+    borderColor: colors.light.secondary,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  lineBtnSelected: {
+    borderWidth: 1,
+    borderColor: "#900D09",
+  },
+  timeIconBtn: {
+    minWidth: "10%",
+    maxWidth: 32,
+    alignItems: "center",
+  },
+  lineBtn: {},
+
+  chordText: {
+    position: "absolute",
+    top: -10,
+    left: 0,
+    fontFamily: monoSpaceFamily,
+    ...defaultStyles.middleText,
+    color: colors.light.textSecondary,
   },
 });
 const titleStyle = StyleSheet.flatten(styles.title, styles.text);
