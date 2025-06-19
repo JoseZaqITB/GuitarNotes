@@ -60,7 +60,7 @@ function reducer(state, action) {
       throw new Error("Unknown action");
   }
 }
-export default function ChordEditor({ lyrics, chords }) {
+export default function ChordEditor({ lyrics, chords, updateChords }) {
   // vars
   const {
     chordString,
@@ -107,7 +107,7 @@ export default function ChordEditor({ lyrics, chords }) {
 
   // update chord string to storage when chord changes ( useful when save button is pressed)
   useEffect(() => {
-    if (_chords) storeChords(_chords);
+    updateChords(_chords);
   }, [chordString, _chords]);
   useEffect(() => {
     const groupCharsBy3 = () => {
