@@ -14,7 +14,7 @@ import {
 import PagerView from "react-native-pager-view";
 import arrowBackIcon from "../assets/arrow_back.png";
 import { router, useNavigation } from "expo-router";
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
 import MyText from "./MyText";
 import ChordEditor from "./ChordEditor";
@@ -61,6 +61,8 @@ export default function SongEditor({ song = {} }) {
     lyricLines: song.lyrics.split(/\n/) || "",
     redoStack: [],
   });
+  const [liveLyricLines, setLiveLyricLines] = useState(song.lyrics.split(/\n/));
+  const debounceTimer = useRef(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [isChordEdition, setIsChordEdition] = useState(false);
   const [editableInput, setEditableInput] = useState(-1);
@@ -118,6 +120,15 @@ export default function SongEditor({ song = {} }) {
     isChordEdition,
   ]);
   useEffect(() => {
+    return () => {
+      // eslint-disable-next-line no-undef
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
+  useEffect(() => {
+    setLiveLyricLines(state.lyricLines);
+  }, [state]);
+  useEffect(() => {
     storeChords(chords);
   }, [chords]);
 
@@ -163,9 +174,16 @@ export default function SongEditor({ song = {} }) {
   };
   const handleOnChangeText = (text, index) => {
     const newLyricLines = [...state.lyricLines];
-    newLyricLines[index] = text;
     newLyricLines[index] = text.padEnd(state.lyricLines[index].length, " ");
-    dispatch({ type: "TYPE", payload: newLyricLines });
+    setLiveLyricLines(newLyricLines);
+
+    // Debounce: reset timer
+    // eslint-disable-next-line no-undef
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    // eslint-disable-next-line no-undef
+    debounceTimer.current = setTimeout(() => {
+      dispatch({ type: "TYPE", payload: newLyricLines });
+    }, 500); // 500ms delay before committing changes
   };
   const handleLongPress = (index) => {
     setIsSelectionMode(true);
@@ -182,10 +200,6 @@ export default function SongEditor({ song = {} }) {
   const handleDelete = (index) => {
     //
     function removeAndShiftChords(chords, lyricLines, selectedLines) {
-      const lineIndices = Object.keys(selectedLines)
-        .map(Number)
-        .sort((a, b) => a - b);
-
       let charOffset = 0;
       let removedRanges = []; // [{start, end, length}]
       let lineOffsets = []; // store char start of each line
@@ -308,14 +322,14 @@ export default function SongEditor({ song = {} }) {
         </View>
         {isChordEdition ? (
           <ChordEditor
-            lyrics={state.lyricLines.join("\n")}
+            lyrics={liveLyricLines.join("\n")}
             chords={chords}
             updateChords={handleUpdateChords}
           />
         ) : (
           <View style={styles.textEditionContainer}>
             <ScrollView>
-              {state.lyricLines.map((line, lineIndex) => (
+              {liveLyricLines.map((line, lineIndex) => (
                 <Pressable
                   key={lineIndex}
                   onPress={() => handlePress(lineIndex)}
