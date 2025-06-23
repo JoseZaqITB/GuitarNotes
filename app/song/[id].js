@@ -157,9 +157,11 @@ export default function SongView() {
                               key={chordIndex}
                             >
                               <MyText style={styles.lyricText}>{char}</MyText>
-                              <MyText style={styles.chordText}>
-                                {song?.chords[chordIndex]}
-                              </MyText>
+                              <View style={styles.chordWrapper}>
+                                <MyText style={styles.chordText}>
+                                  {song?.chords[chordIndex]}
+                                </MyText>
+                              </View>
                             </View>
                           );
                         else
@@ -245,14 +247,20 @@ const styles = StyleSheet.create({
     fontFamily: monoSpaceFamily,
   },
 
-  chordText: {
+  chordWrapper: {
     position: "absolute",
     top: -20,
     left: 0,
-    lineHeight: 48,
+
+    padding: 0,
+    margin: 0,
+    minWidth: 80,
+  },
+  chordText: {
     ...defaultStyles.middleText,
     fontWeight: "bold",
     fontFamily: monoSpaceFamily,
+    lineHeight: 48,
   },
   lyricsAndChordContainer: {
     marginTop: 20,

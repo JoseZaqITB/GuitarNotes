@@ -188,7 +188,7 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
                           {charGroup.split("").map((c, charIndex) => {
                             if (_chords[currentChordIndex + charIndex])
                               return (
-                                <MyText
+                                <View
                                   key={
                                     "" +
                                     rowIndex +
@@ -196,10 +196,12 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
                                     groupIndex +
                                     charIndex
                                   }
-                                  style={styles.chordText}
+                                  style={styles.chordWrapper}
                                 >
-                                  {_chords[currentChordIndex + charIndex]}
-                                </MyText>
+                                  <MyText style={styles.chordText}>
+                                    {_chords[currentChordIndex + charIndex]}
+                                  </MyText>
+                                </View>
                               );
                           })}
                         </Pressable>
@@ -266,14 +268,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 0,
     fontFamily: monoSpaceFamily,
   },
-  chordText: {
+  chordWrapper: {
     position: "absolute",
     top: -20,
     left: 0,
-    lineHeight: 48,
+
+    padding: 0,
+    margin: 0,
+    minWidth: 80,
+  },
+  chordText: {
+    ...defaultStyles.smallText,
+
     fontWeight: "bold",
     fontFamily: monoSpaceFamily,
-    ...defaultStyles.smallText,
+    lineHeight: 48,
   },
   mainContainer: {
     margin: 16,

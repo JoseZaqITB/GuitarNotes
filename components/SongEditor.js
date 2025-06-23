@@ -346,9 +346,11 @@ export default function SongEditor({ song = {} }) {
                   }
                 >
                   {editableInput === lineIndex && (
-                    <MyText style={styles.chordText}>
-                      {chordString[lineIndex]}
-                    </MyText>
+                    <View style={styles.chordWrapper}>
+                      <MyText style={styles.chordText}>
+                        {chordString[lineIndex]}
+                      </MyText>
+                    </View>
                   )}
                   <TextInput
                     value={line}
@@ -503,11 +505,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   lineBtn: {},
-
-  chordText: {
+  chordWrapper: {
     position: "absolute",
     top: -10,
     left: 0,
+
+    paddingTop: 2,
+    margin: 0,
+  },
+  chordText: {
     fontFamily: monoSpaceFamily,
     ...defaultStyles.middleText,
     color: colors.light.textSecondary,
