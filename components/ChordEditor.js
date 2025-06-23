@@ -78,6 +78,17 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
     newStack: [],
     redoStack: [],
   });
+  const getChordPosByGroupPos = (groupIndex) => {
+    // get the chord part of group range ( the position of the next 3 chars from groupPosition)
+    console.log("oli");
+
+    for (let i = 0; i < 3; i++) {
+      const chord = groupPosition[groupIndex + i];
+      console.log(chord);
+      if (chord) return chord;
+    }
+    return -1;
+  };
   const handleSelection = (position) => {
     addChord(currentChord, position);
     dispatch({
@@ -174,11 +185,23 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
                           }
                         >
                           <MyText style={styles.lyricText}>{charGroup}</MyText>
-                          {_chords[currentChordIndex] && (
-                            <MyText style={styles.chordText}>
-                              {_chords[currentChordIndex]}
-                            </MyText>
-                          )}
+                          {charGroup.split("").map((c, charIndex) => {
+                            if (_chords[currentChordIndex + charIndex])
+                              return (
+                                <MyText
+                                  key={
+                                    "" +
+                                    rowIndex +
+                                    wordIndex +
+                                    groupIndex +
+                                    charIndex
+                                  }
+                                  style={styles.chordText}
+                                >
+                                  {_chords[currentChordIndex + charIndex]}
+                                </MyText>
+                              );
+                          })}
                         </Pressable>
                       );
                     })}
