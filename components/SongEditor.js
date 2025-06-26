@@ -69,8 +69,6 @@ export default function SongEditor({ song = {} }) {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedLines, setSelectedLines] = useState({});
   const chordString = useMemo(() => {
-    console.log(state.lyricLines);
-    console.log(chords);
     const emptyChordString = state.lyricLines
       .map((line) => emptyChar.repeat(line.length))
       .join("\n");
@@ -240,9 +238,7 @@ export default function SongEditor({ song = {} }) {
 
       return remainingChords;
     }
-    setChords(
-      removeAndShiftChords(song.chords, state.lyricLines, selectedLines),
-    );
+    setChords(removeAndShiftChords(chords, state.lyricLines, selectedLines));
     //
     const newLyricLines = state.lyricLines.filter(
       (lines, lineIndex) => !selectedLines[lineIndex],
