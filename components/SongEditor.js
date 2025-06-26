@@ -69,6 +69,8 @@ export default function SongEditor({ song = {} }) {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedLines, setSelectedLines] = useState({});
   const chordString = useMemo(() => {
+    console.log(state.lyricLines);
+    console.log(chords);
     const emptyChordString = state.lyricLines
       .map((line) => emptyChar.repeat(line.length))
       .join("\n");
@@ -191,10 +193,7 @@ export default function SongEditor({ song = {} }) {
   };
   const handlePress = (index) => {
     if (isSelectionMode)
-      dispatch({
-        type: "TYPE",
-        payload: { ...state.lyricLines, [index]: true },
-      });
+      setSelectedLines((prev) => ({ ...prev, [index]: true }));
     else setEditableInput(index);
   };
   const handleDelete = (index) => {
