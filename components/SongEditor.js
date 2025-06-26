@@ -28,20 +28,20 @@ function reducer(state, action) {
   switch (action.type) {
     case "TYPE":
       return {
-        undoStack: [...state.undoStack, state.lyricLines],
-        lyricLines: action.payload,
+        undoStack: [...state.undoStack, state.lyricLinesNChords],
+        lyricLinesNChords: action.payload,
         redoStack: [],
       };
     case "UNDO":
       return {
         undoStack: state.undoStack.slice(0, -1),
-        lyricLines: state.undoStack[state.undoStack.length - 1],
-        redoStack: [...state.redoStack, state.lyricLines],
+        lyricLinesNChords: state.undoStack[state.undoStack.length - 1],
+        redoStack: [...state.redoStack, state.lyricLinesNChords],
       };
     case "REDO":
       return {
-        undoStack: [...state.undoStack, state.lyricLines],
-        lyricLines: state.redoStack[state.redoStack.length - 1],
+        undoStack: [...state.undoStack, state.lyricLinesNChords],
+        lyricLinesNChords: state.redoStack[state.redoStack.length - 1],
         redoStack: state.redoStack.slice(0, -1),
       };
     default:
@@ -55,10 +55,12 @@ export default function SongEditor({ song = {} }) {
   const [title, setTitle] = useState(song.title || "");
   const [artist, setArtist] = useState(song.artist || "");
   const [tag, setTag] = useState(song.tag || "");
-  const [chords, setChords] = useState(song.chords || {});
   const [state, dispatch] = useReducer(reducer, {
     undoStack: [],
-    lyricLines: song.lyrics.split(/\n/) || "",
+    lyricLinesNChords: {
+      lyrics: song.lyrics.split(/\n/) || "",
+      chords: song.chords || {},
+    },
     redoStack: [],
   });
   const [liveLyricLines, setLiveLyricLines] = useState(song.lyrics.split(/\n/));
@@ -69,11 +71,15 @@ export default function SongEditor({ song = {} }) {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedLines, setSelectedLines] = useState({});
   const chordString = useMemo(() => {
-    const emptyChordString = state.lyricLines
+    const emptyChordString = state.lyricLinesNChords.lyrics
       .map((line) => emptyChar.repeat(line.length))
       .join("\n");
-    return parseChordString(chords, emptyChordString).split("\n");
-  }, [state.lyricLines, chords]);
+
+    return parseChordString(
+      state.lyricLinesNChords.chords,
+      emptyChordString,
+    ).split("\n");
+  }, [state.lyricLinesNChords]);
   // set a saveButton to the header and updated each time a state is updated
   useEffect(() => {
     navigation.setOptions({
@@ -115,7 +121,7 @@ export default function SongEditor({ song = {} }) {
     title,
     artist,
     tag,
-    state.lyricLines,
+    state.lyricLinesNChords,
     currentPage,
     isChordEdition,
   ]);
@@ -126,21 +132,23 @@ export default function SongEditor({ song = {} }) {
     };
   }, []);
   useEffect(() => {
-    setLiveLyricLines(state.lyricLines);
+    setLiveLyricLines(state.lyricLinesNChords.lyrics);
   }, [state]);
   useEffect(() => {
-    storeChords(chords);
-  }, [chords]);
+    storeChords(state.lyricLinesNChords.chords);
+  }, [state.lyricLinesNChords.chords]);
 
   const handleUpdateChords = (chords) => {
     storeChords(chords);
-    setChords(chords);
+    const newLyricsLinesNChords = { ...state.lyricLinesNChords };
+    newLyricsLinesNChords.chords = chords;
+    dispatch({ type: "TYPE", payload: newLyricsLinesNChords });
   };
   const handleGoBack = () => {
     setShowBackPopUp(true);
   };
   const handleSaveSong = async () => {
-    const lyrics = state.lyricLines.join("\n");
+    const lyrics = state.lyricLinesNChords.lyrics.join("\n");
     // make sure all fields are filled
     if (!title.trim() || !lyrics.trim()) {
       alert("Please fill at least title and lyrics");
@@ -173,16 +181,19 @@ export default function SongEditor({ song = {} }) {
     }
   };
   const handleOnChangeText = (text, index) => {
-    const newLyricLines = [...state.lyricLines];
-    newLyricLines[index] = text.padEnd(state.lyricLines[index].length, " ");
-    setLiveLyricLines(newLyricLines);
+    const newLyricLinesNChords = [...state.lyricLinesNChords];
+    newLyricLinesNChords.lyrics[index] = text.padEnd(
+      state.lyricLinesNChords.lyrics[index].length,
+      " ",
+    );
+    setLiveLyricLines(newLyricLinesNChords.lyrics);
 
     // Debounce: reset timer
     // eslint-disable-next-line no-undef
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     // eslint-disable-next-line no-undef
     debounceTimer.current = setTimeout(() => {
-      dispatch({ type: "TYPE", payload: newLyricLines });
+      dispatch({ type: "TYPE", payload: newLyricLinesNChords });
     }, 500); // 500ms delay before committing changes
   };
   const handleLongPress = (index) => {
@@ -238,12 +249,17 @@ export default function SongEditor({ song = {} }) {
 
       return remainingChords;
     }
-    setChords(removeAndShiftChords(chords, state.lyricLines, selectedLines));
     //
-    const newLyricLines = state.lyricLines.filter(
+    const newLyricLinesNChords = { ...state.lyricLinesNChords };
+    newLyricLinesNChords.lyrics = newLyricLinesNChords.lyrics.filter(
       (lines, lineIndex) => !selectedLines[lineIndex],
     );
-    dispatch({ type: "TYPE", payload: newLyricLines });
+    newLyricLinesNChords.chords = removeAndShiftChords(
+      state.lyricLinesNChords.chords,
+      state.lyricLinesNChords.lyrics,
+      selectedLines,
+    );
+    dispatch({ type: "TYPE", payload: newLyricLinesNChords });
     handleCancelSelection();
   };
   const handleUnselect = (index) => {
@@ -318,7 +334,7 @@ export default function SongEditor({ song = {} }) {
         {isChordEdition ? (
           <ChordEditor
             lyrics={liveLyricLines.join("\n")}
-            chords={chords}
+            chords={state.lyricLinesNChords.chords}
             updateChords={handleUpdateChords}
           />
         ) : (
