@@ -5,21 +5,6 @@ import { colors } from "../style/defaultStyles";
 export default function ColorPressable({ onPress, children, style }) {
   const animation = useRef(new Animated.Value(0)).current;
 
-  const handlePressIn = () => {
-    Animated.timing(animation, {
-      toValue: 1,
-      duration: 200, // milliseconds
-      useNativeDriver: false,
-    }).start();
-  };
-  const handlePressOut = () => {
-    Animated.timing(animation, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  };
-
   const animateTo = (toValue) => {
     animation.stopAnimation(); // prevent animation from continuing
     Animated.timing(animation, {

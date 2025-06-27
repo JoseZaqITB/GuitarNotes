@@ -244,14 +244,14 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
         <Pressable disabled={state.undoStack.length <= 0} onPress={handleUndo}>
           <FontAwesome5
             name="undo-alt"
-            size={16}
+            size={20}
             color={colors.light.textPrimary}
           />
         </Pressable>
         <Pressable disabled={state.redoStack.length <= 0} onPress={handleRedo}>
           <FontAwesome5
             name="redo-alt"
-            size={16}
+            size={20}
             color={colors.light.textPrimary}
           />
         </Pressable>
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   undoRedoContainer: {
     alignSelf: "center",
     flexDirection: "row",
-    gap: 8,
+    gap: 16,
     padding: 8,
   },
 });

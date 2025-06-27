@@ -70,7 +70,7 @@ export default function ConfigModal({
                     <ScalePressable onPress={onClose}>
                       <FontAwesome5
                         name="pen"
-                        size={16}
+                        size={20}
                         color={colors.light.textPrimary}
                       />
                     </ScalePressable>
@@ -78,7 +78,7 @@ export default function ConfigModal({
                   <ScalePressable
                     onPress={() => setModalVisible(!modalVisible)}
                   >
-                    <FontAwesome5 name="trash" size={16} color={"#900D09"} />
+                    <FontAwesome5 name="trash" size={20} color={"#900D09"} />
                   </ScalePressable>
                 </View>
               </View>
@@ -137,11 +137,10 @@ const styles = StyleSheet.create({
     padding: 16,
     elevation: 5,
   },
-  sliderWrapper: {},
+  sliderWrapper: { marginVertical: 4 },
   sliderText: {
     textAlign: "center",
     fontWeight: "bold",
-    transform: [{ translateY: -6 }],
   },
   sectionTitle: {
     ...defaultStyles.middleText,
@@ -150,7 +149,7 @@ const styles = StyleSheet.create({
   btnWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginHorizontal: 8,
+    gap: 16,
+    marginHorizontal: 16,
   },
 });
