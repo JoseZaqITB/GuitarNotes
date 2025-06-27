@@ -24,7 +24,7 @@ export default function SongView() {
   const titleAndAuthor = id.split("-");
   const [song, setSong] = useState("");
   const [currentBtn, setCurrentBtn] = useState("none");
-  let chordIndex = -2; // -1 per whitespaces and -1 per char = -2
+  let chordIndex = -2; //  -1 per \n space and -1 per char
   // use states for scrolling
   const scrollY = useRef(new Animated.Value(0)).current; // Animated value for Y-axis
   const [showConfigMenu, setShowConfigMenu] = React.useState(false);
@@ -139,42 +139,68 @@ export default function SongView() {
         </View>
         <View style={styles.lyricsAndChordContainer}>
           {song?.lyrics?.split("\n").map((row, rowIndex) => {
+            chordIndex++;
             return (
               <View key={row + rowIndex} style={styles.lyricRowContainer}>
                 {row.split(" ").map((word, wordIndex) => {
-                  chordIndex++;
                   return (
-                    <View
-                      style={styles.lyricWordContainer}
-                      key={wordIndex + word}
-                    >
-                      {word.split("").map((char) => {
-                        chordIndex++;
-                        if (song?.chords[chordIndex])
+                    <React.Fragment key={wordIndex + word + "fragment"}>
+                      <View
+                        style={styles.lyricWordContainer}
+                        key={wordIndex + word}
+                      >
+                        {word.split("").map((char) => {
+                          chordIndex++;
+                          if (song?.chords[chordIndex])
+                            return (
+                              <View
+                                style={styles.lyricCharContainer}
+                                key={chordIndex}
+                              >
+                                <MyText style={styles.lyricText}>{char}</MyText>
+                                <View style={styles.chordWrapper}>
+                                  <MyText style={styles.chordText}>
+                                    {song?.chords[chordIndex]}
+                                  </MyText>
+                                </View>
+                              </View>
+                            );
+                          else
+                            return (
+                              <View
+                                style={styles.lyricCharContainer}
+                                key={chordIndex}
+                              >
+                                <MyText style={styles.lyricText}>{char}</MyText>
+                              </View>
+                            );
+                        })}
+                      </View>
+                      {wordIndex < row.split(" ").length - 1 &&
+                        (() => {
+                          chordIndex++;
+                          console.log(word);
                           return (
                             <View
-                              style={styles.lyricCharContainer}
-                              key={chordIndex}
+                              style={styles.lyricWordContainer}
+                              key={wordIndex + word + "space"}
                             >
-                              <MyText style={styles.lyricText}>{char}</MyText>
-                              <View style={styles.chordWrapper}>
-                                <MyText style={styles.chordText}>
-                                  {song?.chords[chordIndex]}
+                              <View style={styles.lyricCharContainer}>
+                                <MyText style={styles.lyricText}>
+                                  {"\u00A0"}
                                 </MyText>
+                                {song?.chords[chordIndex] && (
+                                  <View style={styles.chordWrapper}>
+                                    <MyText style={styles.chordText}>
+                                      {song?.chords[chordIndex]}
+                                    </MyText>
+                                  </View>
+                                )}
                               </View>
                             </View>
                           );
-                        else
-                          return (
-                            <View
-                              style={styles.lyricCharContainer}
-                              key={chordIndex}
-                            >
-                              <MyText style={styles.lyricText}>{char}</MyText>
-                            </View>
-                          );
-                      })}
-                    </View>
+                        })()}
+                    </React.Fragment>
                   );
                 })}
               </View>
@@ -276,7 +302,7 @@ const styles = StyleSheet.create({
   },
   lyricWordContainer: {
     flexDirection: "row",
-    marginHorizontal: 8,
+    marginHorizontal: 0,
     marginVertical: 0,
   },
   lyricRowContainer: {

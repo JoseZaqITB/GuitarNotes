@@ -8,7 +8,7 @@ import {
 import { colors, defaultStyles } from "../style/defaultStyles";
 import useChordify from "../hooks/useChordify";
 import MyText from "./MyText";
-import { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import ChordBoard from "./ChordBoard";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
@@ -164,50 +164,77 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
             <View key={row + rowIndex} style={styles.lyricRowContainer}>
               {row.map((word, wordIndex) => {
                 chordIndex++;
+
                 return (
-                  <View
-                    style={styles.lyricWordContainer}
-                    key={wordIndex + word}
-                  >
-                    {word.map((charGroup, groupIndex) => {
-                      const currentChordIndex = chordIndex; // freeze this value for this iteration
-                      chordIndex += charGroup.length;
-                      return (
-                        <Pressable
-                          style={styles.groupCharContainer}
-                          key={rowIndex + wordIndex + groupIndex}
-                          onPress={() =>
-                            handleSelection(
-                              groupPosition[
-                                "" + rowIndex + wordIndex + groupIndex
-                              ],
-                            )
-                          }
-                        >
-                          <MyText style={styles.lyricText}>{charGroup}</MyText>
-                          {charGroup.split("").map((c, charIndex) => {
-                            if (_chords[currentChordIndex + charIndex])
-                              return (
-                                <View
-                                  key={
-                                    "" +
-                                    rowIndex +
-                                    wordIndex +
-                                    groupIndex +
-                                    charIndex
-                                  }
-                                  style={styles.chordWrapper}
-                                >
+                  <React.Fragment key={wordIndex + word + "fragment"}>
+                    <View
+                      style={styles.lyricWordContainer}
+                      key={wordIndex + word}
+                    >
+                      {word.map((charGroup, groupIndex) => {
+                        const currentChordIndex = chordIndex; // freeze this value for this iteration
+                        chordIndex += charGroup.length;
+                        return (
+                          <Pressable
+                            style={styles.groupCharContainer}
+                            key={rowIndex + wordIndex + groupIndex}
+                            onPress={() =>
+                              handleSelection(
+                                groupPosition[
+                                  "" + rowIndex + wordIndex + groupIndex
+                                ],
+                              )
+                            }
+                          >
+                            <MyText style={styles.lyricText}>
+                              {charGroup}
+                            </MyText>
+                            {charGroup.split("").map((c, charIndex) => {
+                              if (_chords[currentChordIndex + charIndex])
+                                return (
+                                  <View
+                                    key={
+                                      "" +
+                                      rowIndex +
+                                      wordIndex +
+                                      groupIndex +
+                                      charIndex
+                                    }
+                                    style={styles.chordWrapper}
+                                  >
+                                    <MyText style={styles.chordText}>
+                                      {_chords[currentChordIndex + charIndex]}
+                                    </MyText>
+                                  </View>
+                                );
+                            })}
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                    {wordIndex < row.length - 1 &&
+                      (() => {
+                        return (
+                          <View
+                            style={styles.lyricWordContainer}
+                            key={wordIndex + word + "space"}
+                          >
+                            <View style={styles.lyricCharContainer}>
+                              <MyText style={styles.lyricText}>
+                                {"\u00A0"}
+                              </MyText>
+                              {_chords[chordIndex] && (
+                                <View style={styles.chordWrapper}>
                                   <MyText style={styles.chordText}>
-                                    {_chords[currentChordIndex + charIndex]}
+                                    {_chords[chordIndex]}
                                   </MyText>
                                 </View>
-                              );
-                          })}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
+                              )}
+                            </View>
+                          </View>
+                        );
+                      })()}
+                  </React.Fragment>
                 );
               })}
             </View>
@@ -255,7 +282,7 @@ const styles = StyleSheet.create({
   },
   lyricWordContainer: {
     flexDirection: "row",
-    marginHorizontal: 8,
+    marginHorizontal: 0,
     marginVertical: 0,
   },
   lyricRowContainer: {
