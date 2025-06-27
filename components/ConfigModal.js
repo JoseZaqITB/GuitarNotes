@@ -1,7 +1,6 @@
 import {
   Image,
   Modal,
-  Pressable,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
@@ -15,6 +14,8 @@ import { useState } from "react";
 import ConfirmModal from "./ConfirmModal";
 import { DeleteSongByidAsync } from "../hooks/songList";
 import { colors, defaultStyles } from "../style/defaultStyles";
+import ScalePressable from "./ScalePressable";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 export default function ConfigModal({
   id,
@@ -25,11 +26,18 @@ export default function ConfigModal({
   onClose,
   visible,
 }) {
+  const minValue = 1000; // 1 second
+  const maxValue = 1000 * 60 * 8; // 8 minutes
+  const reversedValue = maxValue - scrollDuration + minValue; // Reverse the value so left = max, right = min
   const [modalVisible, setModalVisible] = useState(false);
   const handleDeleteSong = () => {
     DeleteSongByidAsync(id).catch((error) => alert(error));
     setModalVisible(false);
     router.navigate("/");
+  };
+  const handleValueChange = (value) => {
+    const realValue = maxValue - value + minValue;
+    setScrollDuration(realValue);
   };
   return (
     <Modal
@@ -59,39 +67,40 @@ export default function ConfigModal({
                   marginVertical: 4,
                 }}
               >
-                <MyText style={defaultStyles.middleText}>Edit Song: </MyText>
-                <Link href={`/add/${title}-${author}`} asChild>
-                  <Pressable>
-                    <Image source={penIcon} width={18} height={18} />
-                  </Pressable>
-                </Link>
-                <Pressable onPress={() => setModalVisible(!modalVisible)}>
-                  <Image
-                    source={trashIcon}
-                    width={28}
-                    height={28}
-                    tintColor={"red"}
-                    style={{ width: 28, height: 28 }}
-                  />
-                </Pressable>
+                <MyText style={styles.sectionTitle}>Edit Song </MyText>
+                <View style={styles.btnWrapper}>
+                  <Link href={`/add/${title}-${author}`} asChild>
+                    <ScalePressable>
+                      <FontAwesome5
+                        name="pen"
+                        size={16}
+                        color={colors.light.textPrimary}
+                      />
+                    </ScalePressable>
+                  </Link>
+                  <ScalePressable
+                    onPress={() => setModalVisible(!modalVisible)}
+                  >
+                    <FontAwesome5 name="trash" size={16} color={"#900D09"} />
+                  </ScalePressable>
+                </View>
               </View>
               <View style={{ marginVertical: 4 }}>
-                <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-                  <MyText style={defaultStyles.middleText}>
-                    Autoscroll speed:{" "}
+                <MyText style={styles.sectionTitle}>Autoscroll speed </MyText>
+                <View style={styles.sliderWrapper}>
+                  <Slider
+                    step={1000}
+                    value={reversedValue}
+                    minimumValue={minValue} // milliseconds
+                    maximumValue={maxValue} // millisecons * seconds * minutes
+                    minimumTrackTintColor="#FFFFFF"
+                    maximumTrackTintColor="#000000"
+                    onValueChange={handleValueChange}
+                  />
+                  <MyText style={styles.sliderText}>
+                    {GetMinFromMil(scrollDuration)}
                   </MyText>
-                  <MyText>{GetMinFromMil(scrollDuration)}</MyText>
                 </View>
-                <Slider
-                  style={{ width: 200, height: 40 }}
-                  step={1}
-                  value={scrollDuration}
-                  minimumValue={1000} // milliseconds
-                  maximumValue={1000 * 60 * 8} // millisecons * seconds * minutes
-                  minimumTrackTintColor="#FFFFFF"
-                  maximumTrackTintColor="#000000"
-                  onValueChange={(value) => setScrollDuration(value)}
-                />
               </View>
             </View>
           </View>
@@ -130,5 +139,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     elevation: 5,
+  },
+  sliderWrapper: {},
+  sliderText: {
+    textAlign: "center",
+    fontWeight: "bold",
+    transform: [{ translateY: -6 }],
+  },
+  sectionTitle: {
+    ...defaultStyles.middleText,
+    fontWeight: "bold",
+  },
+  btnWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginHorizontal: 8,
   },
 });
