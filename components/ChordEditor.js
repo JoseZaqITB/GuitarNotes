@@ -11,6 +11,7 @@ import MyText from "./MyText";
 import React, { useEffect, useReducer, useState } from "react";
 import ChordBoard from "./ChordBoard";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import ColorPressable from "./ColorPressable";
 
 function reducer(state, action) {
   switch (action.type) {
@@ -80,11 +81,9 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
   });
   const getChordPosByGroupPos = (groupIndex) => {
     // get the chord part of group range ( the position of the next 3 chars from groupPosition)
-    console.log("oli");
 
     for (let i = 0; i < 3; i++) {
       const chord = groupPosition[groupIndex + i];
-      console.log(chord);
       if (chord) return chord;
     }
     return -1;
@@ -175,7 +174,7 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
                         const currentChordIndex = chordIndex; // freeze this value for this iteration
                         chordIndex += charGroup.length;
                         return (
-                          <Pressable
+                          <ColorPressable
                             style={styles.groupCharContainer}
                             key={rowIndex + wordIndex + groupIndex}
                             onPress={() =>
@@ -208,7 +207,7 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
                                   </View>
                                 );
                             })}
-                          </Pressable>
+                          </ColorPressable>
                         );
                       })}
                     </View>

@@ -1,13 +1,10 @@
 import {
-  Image,
   Modal,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import MyText from "./MyText";
-import penIcon from "../assets/pen.png";
-import trashIcon from "../assets/trash.png";
 import Slider from "@react-native-community/slider";
 import { Link, router } from "expo-router";
 import { useState } from "react";
@@ -70,7 +67,7 @@ export default function ConfigModal({
                 <MyText style={styles.sectionTitle}>Edit Song </MyText>
                 <View style={styles.btnWrapper}>
                   <Link href={`/add/${title}-${author}`} asChild>
-                    <ScalePressable>
+                    <ScalePressable onPress={onClose}>
                       <FontAwesome5
                         name="pen"
                         size={16}

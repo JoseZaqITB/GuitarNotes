@@ -1,7 +1,8 @@
 import { Link } from "expo-router";
-import { Pressable, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { colors, defaultStyles } from "../style/defaultStyles";
 import MyText from "../components/MyText";
+import ScalePressable from "./ScalePressable";
 
 export default function ListItem({ title, author }) {
   return (
@@ -10,10 +11,10 @@ export default function ListItem({ title, author }) {
       style={styles.basicContainer}
       asChild
     >
-      <Pressable>
+      <ScalePressable>
         <MyText style={titleStyle}>{title}</MyText>
         <MyText style={textStyle}>{author}</MyText>
-      </Pressable>
+      </ScalePressable>
     </Link>
   );
 }

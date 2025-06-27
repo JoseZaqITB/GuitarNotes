@@ -179,7 +179,6 @@ export default function SongView() {
                       {wordIndex < row.split(" ").length - 1 &&
                         (() => {
                           chordIndex++;
-                          console.log(word);
                           return (
                             <View
                               style={styles.lyricWordContainer}
