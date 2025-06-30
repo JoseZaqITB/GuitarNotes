@@ -393,14 +393,14 @@ export default function SongEditor({ song = {} }) {
                   <Pressable onPress={handleDelete}>
                     <FontAwesome5
                       name="trash"
-                      size={16}
+                      size={20}
                       color={colors.light.textPrimary}
                     />
                   </Pressable>
                   <Pressable onPress={handleCancelSelection}>
                     <FontAwesome5
                       name="times"
-                      size={16}
+                      size={20}
                       color={colors.light.textPrimary}
                     />
                   </Pressable>
@@ -413,7 +413,7 @@ export default function SongEditor({ song = {} }) {
                   >
                     <FontAwesome5
                       name="undo-alt"
-                      size={16}
+                      size={20}
                       color={colors.light.textPrimary}
                     />
                   </Pressable>
@@ -423,7 +423,7 @@ export default function SongEditor({ song = {} }) {
                   >
                     <FontAwesome5
                       name="redo-alt"
-                      size={16}
+                      size={20}
                       color={colors.light.textPrimary}
                     />
                   </Pressable>
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     alignSelf: "center",
     flexDirection: "row",
-    gap: 8,
+    gap: 16,
     padding: 8,
   },
   textEditionContainer: {
