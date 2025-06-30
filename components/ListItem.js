@@ -1,21 +1,19 @@
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { StyleSheet } from "react-native";
 import { colors, defaultStyles } from "../style/defaultStyles";
 import MyText from "../components/MyText";
 import ScalePressable from "./ScalePressable";
 
 export default function ListItem({ title, author }) {
+  const router = useRouter();
+  const handlePress = () => {
+    router.push(`/song/${title}-${author}`);
+  };
   return (
-    <Link
-      href={`/song/${title}-${author}`}
-      style={styles.basicContainer}
-      asChild
-    >
-      <ScalePressable>
-        <MyText style={titleStyle}>{title}</MyText>
-        <MyText style={textStyle}>{author}</MyText>
-      </ScalePressable>
-    </Link>
+    <ScalePressable style={styles.basicContainer} onPress={handlePress}>
+      <MyText style={titleStyle}>{title}</MyText>
+      <MyText style={textStyle}>{author}</MyText>
+    </ScalePressable>
   );
 }
 

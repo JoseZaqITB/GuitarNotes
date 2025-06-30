@@ -181,18 +181,17 @@ export default function SongEditor({ song = {} }) {
     }
   };
   const handleOnChangeText = (text, index) => {
-    const newLyricLinesNChords = [...state.lyricLinesNChords];
-    newLyricLinesNChords.lyrics[index] = text.padEnd(
-      state.lyricLinesNChords.lyrics[index].length,
-      " ",
-    );
-    setLiveLyricLines(newLyricLinesNChords.lyrics);
+    const newLyrics = [...liveLyricLines];
+    newLyrics[index] = text.padEnd(liveLyricLines[index].length, " ");
+    setLiveLyricLines(newLyrics);
 
     // Debounce: reset timer
     // eslint-disable-next-line no-undef
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     // eslint-disable-next-line no-undef
     debounceTimer.current = setTimeout(() => {
+      const newLyricLinesNChords = { ...state.lyricLinesNChords };
+      newLyricLinesNChords.lyrics = newLyrics;
       dispatch({ type: "TYPE", payload: newLyricLinesNChords });
     }, 500); // 500ms delay before committing changes
   };

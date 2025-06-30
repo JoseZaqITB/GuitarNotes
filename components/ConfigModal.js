@@ -6,7 +6,7 @@ import {
 } from "react-native";
 import MyText from "./MyText";
 import Slider from "@react-native-community/slider";
-import { Link, router } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import ConfirmModal from "./ConfirmModal";
 import { DeleteSongByidAsync } from "../hooks/songList";
@@ -27,6 +27,12 @@ export default function ConfigModal({
   const maxValue = 1000 * 60 * 8; // 8 minutes
   const reversedValue = maxValue - scrollDuration + minValue; // Reverse the value so left = max, right = min
   const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
+
+  const handlePress = () => {
+    onClose();
+    router.push(`/add/${title}-${author}`);
+  };
   const handleDeleteSong = () => {
     DeleteSongByidAsync(id).catch((error) => alert(error));
     setModalVisible(false);
@@ -66,15 +72,13 @@ export default function ConfigModal({
               >
                 <MyText style={styles.sectionTitle}>Edit Song </MyText>
                 <View style={styles.btnWrapper}>
-                  <Link href={`/add/${title}-${author}`} asChild>
-                    <ScalePressable onPress={onClose}>
-                      <FontAwesome5
-                        name="pen"
-                        size={20}
-                        color={colors.light.textPrimary}
-                      />
-                    </ScalePressable>
-                  </Link>
+                  <ScalePressable onPress={handlePress}>
+                    <FontAwesome5
+                      name="pen"
+                      size={20}
+                      color={colors.light.textPrimary}
+                    />
+                  </ScalePressable>
                   <ScalePressable
                     onPress={() => setModalVisible(!modalVisible)}
                   >
