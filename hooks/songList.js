@@ -27,11 +27,9 @@ const useSongList = () => {
     readFile();
   }, []);
   // functions
-  async function findSong(title, author) {
+  async function findSong(songId) {
     if (data) {
-      return data.find(
-        (song) => song.title === title && song.artist === author,
-      );
+      return data.find((song) => song.id.toString() === songId);
     }
     return null;
   }

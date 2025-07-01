@@ -6,15 +6,12 @@ import { ActivityIndicator } from "react-native";
 export default function UpdateSongView() {
   // vars
   const { songData } = useLocalSearchParams();
-  const titleAndArtist = songData.split("-");
+  const songId = songData;
   const [song, setSong] = useState(undefined);
   //use effects
   useEffect(() => {
     GetListSongAsync().then((songList) => {
-      const song = songList.find(
-        (song) =>
-          song.title === titleAndArtist[0] && song.artist === titleAndArtist[1],
-      );
+      const song = songList.find((song) => song.id.toString() === songId);
       setSong(song);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

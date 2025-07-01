@@ -17,7 +17,7 @@ export default function ImportView() {
         const chordifySong = parseToChordifySong(newTextSong);
         return AddTemporarySongToList(chordifySong.lyrics, chordifySong.chords);
       })
-      .then((tempSong) => GoToUpdateSongView(tempSong.title, tempSong.artist));
+      .then((tempSong) => GoToUpdateSongView(tempSong.id));
   };
 
   return (
@@ -144,6 +144,6 @@ async function AddTemporarySongToList(lyrics, chords) {
     throw new Error("Error trying to update temp song");
   }
 }
-const GoToUpdateSongView = (title, artist) => {
-  router.push(`/add/${title}-${artist}`);
+const GoToUpdateSongView = (songId) => {
+  router.push(`/add/${songId}`);
 };

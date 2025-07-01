@@ -4,10 +4,10 @@ import { colors, defaultStyles } from "../style/defaultStyles";
 import MyText from "../components/MyText";
 import ScalePressable from "./ScalePressable";
 
-export default function ListItem({ title, author }) {
+export default function ListItem({ songId, title, author }) {
   const router = useRouter();
   const handlePress = () => {
-    router.push(`/song/${title}-${author}`);
+    router.push(`/song/${songId}`);
   };
   return (
     <ScalePressable style={styles.basicContainer} onPress={handlePress}>

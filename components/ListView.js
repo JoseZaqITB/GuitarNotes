@@ -28,6 +28,7 @@ export default function ListView({ gap }) {
       {songList.map((song, index) => (
         <Fragment key={`empty wrapper ${song.title} ${song.artist} ${index}`}>
           <ListItem
+            songId={song.id}
             title={song.title}
             author={song.artist}
             key={`${song.title} ${song.artist} ${index}`}

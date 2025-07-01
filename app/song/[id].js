@@ -20,8 +20,8 @@ export default function SongView() {
   // vars
   const scrollViewRef = React.useRef(0);
   const { id } = useLocalSearchParams();
+  const songId = id;
   const songList = useSongList();
-  const titleAndAuthor = id.split("-");
   const [song, setSong] = useState("");
   const [currentBtn, setCurrentBtn] = useState("none");
   let chordIndex = -2; //  -1 per \n space and -1 per char
@@ -100,11 +100,9 @@ export default function SongView() {
   // initialize song
   useEffect(() => {
     if (songList.data) {
-      songList
-        .findSong(titleAndAuthor[0], titleAndAuthor[1])
-        .then((song) => setSong(song));
+      songList.findSong(songId).then((song) => setSong(song));
     }
-  }, [songList, titleAndAuthor]);
+  }, [songList, songId]);
   useEffect(() => {
     // update distance to scroll
     // when unomunts clean all listeners
@@ -242,8 +240,6 @@ export default function SongView() {
 
       <ConfigModal
         visible={showConfigMenu}
-        title={titleAndAuthor[0]}
-        author={titleAndAuthor[1]}
         id={song.id}
         scrollDuration={scrollDuration}
         setScrollDuration={setScrollDuration}

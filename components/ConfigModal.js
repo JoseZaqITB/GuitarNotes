@@ -16,8 +16,6 @@ import { FontAwesome5 } from "@expo/vector-icons";
 
 export default function ConfigModal({
   id,
-  title,
-  author,
   scrollDuration,
   setScrollDuration,
   onClose,
@@ -31,7 +29,7 @@ export default function ConfigModal({
 
   const handlePress = () => {
     onClose();
-    router.push(`/add/${title}-${author}`);
+    router.push(`/add/${id}`);
   };
   const handleDeleteSong = () => {
     DeleteSongByidAsync(id).catch((error) => alert(error));
