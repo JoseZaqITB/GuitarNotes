@@ -104,11 +104,13 @@ export default function SongEditor({ song = {} }) {
           </View>
         ) : (
           <View style={styles.headerButtonsContainer}>
-            <FontAwesome5
-              name="save"
-              size={24}
-              color={colors.light.textPrimary}
-            />
+            <Pressable onPress={handleSaveSong}>
+              <FontAwesome5
+                name="save"
+                size={24}
+                color={colors.light.textPrimary}
+              />
+            </Pressable>
           </View>
         ),
       headerLeft: () => (
