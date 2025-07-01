@@ -15,7 +15,12 @@ export default function ImportView() {
       .then((document) => FileSystem.readAsStringAsync(document.assets[0].uri))
       .then((newTextSong) => {
         const chordifySong = parseToChordifySong(newTextSong);
-        return AddTemporarySongToList(chordifySong.lyrics, chordifySong.chords);
+        const metadata = extractMetaDataFromAcordesSong(newTextSong);
+        return AddTemporarySongToList(
+          metadata,
+          chordifySong.lyrics,
+          chordifySong.chords,
+        );
       })
       .then((tempSong) => GoToUpdateSongView(tempSong.id));
   };
@@ -126,16 +131,39 @@ function parseToChordifySong(textSong) {
 
   return { lyrics, chords };
 }
-
-async function AddTemporarySongToList(lyrics, chords) {
+/**
+ * @description Extracts metadata from an Acordes Song text file
+ * @param {string} textSong 
+ * @returns {object} {
+  artista: '-?-',
+  cancion: '-?-',
+  autor: '-?-',
+  album: '-?-',
+  trans: '-?-'
+} 
+ */
+function extractMetaDataFromAcordesSong(textSong) {
+  const metadata = {};
+  const lines = textSong.split("\n");
+  lines.forEach((line) => {
+    const match = line.match(/\|\s*(\w+):\s*([aA-zZ0-9\s]*)/);
+    if (match) {
+      const key = match[1].toLowerCase();
+      const value = match[2].trim();
+      metadata[key] = value;
+    }
+  });
+  return metadata;
+}
+async function AddTemporarySongToList(metadata, lyrics, chords) {
   const tempName = "temp";
   const tempId = 0;
   // update temp song
   try {
     return UpdateSongAsync(
       tempId,
-      tempName,
-      tempName,
+      metadata.cancion ? metadata.cancion : tempName,
+      metadata.artista ? metadata.artista : tempName,
       lyrics,
       chords,
       tempName,
