@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
 
 export const storeChords = async (value) => {
   try {
@@ -6,7 +7,7 @@ export const storeChords = async (value) => {
       await AsyncStorage.setItem("chords", JSON.stringify(value));
     } else await AsyncStorage.setItem("chords", value);
   } catch (e) {
-    alert("songStorage: " + e);
+    Alert.alert("songStorage: " + e);
   }
 };
 
@@ -17,7 +18,7 @@ export const getChords = async () => {
       return JSON.parse(value);
     }
   } catch (e) {
-    alert("songStorage: " + e);
+    Alert.alert("songStorage: " + e);
   }
 };
 
@@ -25,7 +26,7 @@ export const storeLyrics = async (value) => {
   try {
     await AsyncStorage.setItem("lyrics", value);
   } catch (e) {
-    alert("songStorage: " + e);
+    Alert.alert("songStorage: " + e);
   }
 };
 
@@ -36,6 +37,6 @@ export const getLyrics = async () => {
       return "";
     }
   } catch (e) {
-    alert("songStorage: " + e);
+    Alert.alert("songStorage: " + e);
   }
 };

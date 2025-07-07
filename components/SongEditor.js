@@ -58,12 +58,14 @@ export default function SongEditor({ song = {} }) {
   const [state, dispatch] = useReducer(reducer, {
     undoStack: [],
     lyricLinesNChords: {
-      lyrics: song.lyrics.split(/\n/) || "",
+      lyrics: song.lyrics?.split(/\n/) || [],
       chords: song.chords || {},
     },
     redoStack: [],
   });
-  const [liveLyricLines, setLiveLyricLines] = useState(song.lyrics.split(/\n/));
+  const [liveLyricLines, setLiveLyricLines] = useState(
+    song.lyrics?.split(/\n/) || [],
+  );
   const debounceTimer = useRef(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [isChordEdition, setIsChordEdition] = useState(false);
@@ -366,7 +368,6 @@ export default function SongEditor({ song = {} }) {
                   )}
                   <TextInput
                     value={line}
-                    placeholder="A full fish soul with an empty song..."
                     style={
                       editableInput === lineIndex
                         ? { ...styles.textInput, ...styles.editableInput }
