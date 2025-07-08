@@ -64,7 +64,8 @@ export default function CreateView({ song = {} }) {
     },
     redoStack: [],
   });
-  const [liveLyricLines, setLiveLyricLines] = useState(song.lyrics || "");
+  const [liveLyrics, setLiveLyrics] = useState(song.lyrics || "");
+  const [liveChords, setLiveChords] = useState(song.chords || {});
   const debounceTimer = useRef(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [isChordEdition, setIsChordEdition] = useState(false);
@@ -124,7 +125,7 @@ export default function CreateView({ song = {} }) {
     };
   }, []);
   useEffect(() => {
-    setLiveLyricLines(state.lyricLinesNChords.lyrics);
+    setLiveLyrics(state.lyricLinesNChords.lyrics);
   }, [state]);
   useEffect(() => {
     storeChords(state.lyricLinesNChords.chords);
@@ -134,13 +135,14 @@ export default function CreateView({ song = {} }) {
     storeChords(chords);
     const newLyricsLinesNChords = { ...state.lyricLinesNChords };
     newLyricsLinesNChords.chords = chords;
+    setLiveChords(chords);
     dispatch({ type: "TYPE", payload: newLyricsLinesNChords });
   };
   const handleGoBack = () => {
     setShowBackPopUp(true);
   };
   const handleSaveSong = async () => {
-    const lyrics = state.lyricLinesNChords.lyrics.join("\n");
+    const lyrics = state.lyricLinesNChords.lyrics;
     // make sure all fields are filled
     if (!title.trim() || !lyrics.trim()) {
       Alert.Alert.alert("Please fill at least title and lyrics");
@@ -173,126 +175,61 @@ export default function CreateView({ song = {} }) {
     }
   };
   const handleOnChangeText = (text) => {
-    function reposChords(chords, lyricLines, changedLines, remove, deleteLine = false, diffTextLine = []) {
-      let charOffset = 0;
-      let changedRanges = []; // [{start, end, length}]
-      let lineOffsets = []; // store char start of each line
+    function updateChordsFromDiff(oldText, newText, oldChords) {
+      const updatedChords = {};
 
-      // Step 1: calculate line start offsets and deleted line ranges
-      lyricLines.forEach((line, index) => {
-        lineOffsets.push(charOffset);
-
-        const lineLength = line.length + 1; // +1 for newline or space
-        if (changedLines[index]) {
-          changedRanges.push({
-            start: charOffset,
-            end: charOffset + line.length,
-            length: diffTextLine.length !== 0 ?  Number(diffTextLine[index]) : lineLength,
-          });
-        }
-
-        charOffset += lineLength;
-      });
-
-      // Step 2: filter chords not in removed ranges ( if remove is true ) and prepare for shifting
-      const remainingChords = {};
-      for (const [posStr, chord] of Object.entries(chords)) {
-        const pos = parseInt(posStr);
-
-        // Check if this chord is in any deleted line range
-        if (deleteLine) {
-          const isDeleted = changedRanges.some(
-            ({ start, end }) => pos >= start && pos <= end
-          );
-          if (isDeleted) continue;
-        }
-
-        // Calculate shift: how much content was removed before this chord
-        const shift = changedRanges
-          .filter(({ start, end }) => (remove || diffTextLine.length !== 0 ? end < pos : start <= pos))
-          .reduce((sum, { length }) => sum + length, 0);
-
-        if (remove) remainingChords[pos - shift] = chord;
-        else remainingChords[pos + shift] = chord;
+      // Find the range where the change occurred
+      let start = 0;
+      while (
+        start < oldText.length &&
+        start < newText.length &&
+        oldText[start] === newText[start]
+      ) {
+        start++;
       }
 
-      return remainingChords;
+      let endOld = oldText.length - 1;
+      let endNew = newText.length - 1;
+      while (
+        endOld >= start &&
+        endNew >= start &&
+        oldText[endOld] === newText[endNew]
+      ) {
+        endOld--;
+        endNew--;
+      }
+
+      const removedCount = endOld - start + 1;
+      const addedCount = endNew - start + 1;
+      const shift = addedCount - removedCount;
+
+      for (const [posStr, chord] of Object.entries(oldChords)) {
+        const pos = Number(posStr);
+
+        if (pos < start) {
+          // chord is before the edit — keep as is
+          updatedChords[pos] = chord;
+        } else if (pos > endOld) {
+          // chord is after the change — shift
+          updatedChords[pos + shift] = chord;
+        }
+        // Chords within the changed/deleted range are discarded
+      }
+      return updatedChords;
     }
-    const oldTextLines = liveLyricLines.split("\n");
-    const newTextLines = text.split("\n");
-    const diff = oldTextLines.length - newTextLines.length;
     const newLyricLinesNChords = { ...state.lyricLinesNChords };
-    let changedLines = {};
-
-    if (diff > 0) {
-      // check what line have changed or been removed
-      let j = 0;
-      for (let i = 0; i < oldTextLines.length - 1; i++) {
-        if (oldTextLines[i] !== newTextLines[j]) {
-          changedLines[i] = true;
-          j--;
-        }
-        j++;
-      }
-      newLyricLinesNChords.chords = reposChords(
-        state.lyricLinesNChords.chords,
-        oldTextLines,
-        changedLines,
-        true,
-        true,
-      );
-
-      newLyricLinesNChords.lyrics = text;
-      dispatch({ type: "TYPE", payload: newLyricLinesNChords });
-    } else if (diff < 0) {
-      let j = 0;
-      for (let i = 0; i < newTextLines.length - 1; i++) {
-        if (oldTextLines[j] !== newTextLines[i]) {
-          changedLines[j] = true;
-          j--;
-        }
-        j++;
-      }
-      newLyricLinesNChords.chords = reposChords(
-        state.lyricLinesNChords.chords,
-        newTextLines,
-        changedLines,
-        false
-      );
-
-      newLyricLinesNChords.lyrics = text;
-      dispatch({ type: "TYPE", payload: newLyricLinesNChords });
-    } else {
-      // check if a line have changed its length
-      let isRemoved = true;
-      const diffTextLine = newTextLines.map((line, index) => {
-        if (line.length !== oldTextLines[index].length) {
-          if(line.length > oldTextLines[index].length) isRemoved = false;
-          changedLines[index] = true;
-          return Math.abs(line.length - oldTextLines[index].length);
-        }
-        return line.length;
-      })
-      if(Object.keys(changedLines).length > 0) {
-        console.log(newLyricLinesNChords.chords)
-        newLyricLinesNChords.chords = reposChords(
-          state.lyricLinesNChords.chords,
-          oldTextLines,
-          changedLines,
-          isRemoved,
-          false,
-          diffTextLine,
-        );
-        console.log(newLyricLinesNChords.chords)
-      }
-    }
+    const oldText = liveLyrics;
+    const newText = text;
+    const newChords = updateChordsFromDiff(oldText, newText, liveChords);
     // save changes
-    setLiveLyricLines(text);
+    setLiveLyrics(text);
+    setLiveChords(newChords);
     // Debounce: reset timer
     // eslint-disable-next-line no-undef
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     // eslint-disable-next-line no-undef
     debounceTimer.current = setTimeout(() => {
+      newLyricLinesNChords.chords = newChords;
       newLyricLinesNChords.lyrics = text;
       dispatch({ type: "TYPE", payload: newLyricLinesNChords });
     }, 500); // 500ms delay before committing changes
@@ -425,7 +362,7 @@ export default function CreateView({ song = {} }) {
         </View>
         {isChordEdition ? (
           <ChordEditor
-            lyrics={liveLyricLines}
+            lyrics={liveLyrics}
             chords={state.lyricLinesNChords.chords}
             updateChords={handleUpdateChords}
           />
@@ -433,7 +370,7 @@ export default function CreateView({ song = {} }) {
           <View style={styles.textEditionContainer}>
             <TextInput
               placeholder="A full fish soul with an empty song..."
-              value={liveLyricLines}
+              value={liveLyrics}
               style={styles.textInput}
               onChangeText={(text) => {
                 handleOnChangeText(text);
