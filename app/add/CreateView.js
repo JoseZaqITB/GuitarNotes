@@ -6,7 +6,6 @@ import {
   Image,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   TextInput,
   View,
@@ -15,14 +14,13 @@ import {
 import PagerView from "react-native-pager-view";
 import arrowBackIcon from "../../assets/arrow_back.png";
 import { router, useNavigation } from "expo-router";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../../hooks/songList";
 import MyText from "../../components/MyText";
 import ChordEditor from "../../components/ChordEditor";
 import ConfirmModal from "../../components/ConfirmModal";
 import { getChords, storeChords } from "../../stores/songStorage";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { emptyChar, parseChordString } from "../../hooks/useChordify";
 
 // or useReducer purposes
 function reducer(state, action) {
@@ -264,7 +262,7 @@ export default function CreateView({ song = {} }) {
 
         // Check if this chord is in any deleted line range
         const isDeleted = removedRanges.some(
-          ({ start, end }) => pos >= start && pos <= end
+          ({ start, end }) => pos >= start && pos <= end,
         );
         if (isDeleted) continue;
 
@@ -281,22 +279,15 @@ export default function CreateView({ song = {} }) {
     //
     const newLyricLinesNChords = { ...state.lyricLinesNChords };
     newLyricLinesNChords.lyrics = newLyricLinesNChords.lyrics.filter(
-      (lines, lineIndex) => !selectedLines[lineIndex]
+      (lines, lineIndex) => !selectedLines[lineIndex],
     );
     newLyricLinesNChords.chords = removeAndShiftChords(
       state.lyricLinesNChords.chords,
       state.lyricLinesNChords.lyrics,
-      selectedLines
+      selectedLines,
     );
     dispatch({ type: "TYPE", payload: newLyricLinesNChords });
     handleCancelSelection();
-  };
-  const handleUnselect = (index) => {
-    setSelectedLines((prev) => {
-      const updated = { ...prev };
-      delete updated[index];
-      return updated;
-    });
   };
   const handleCancelSelection = () => {
     setSelectedLines([]);
