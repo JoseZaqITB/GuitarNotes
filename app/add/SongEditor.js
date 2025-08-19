@@ -1,17 +1,9 @@
 // info
 import { colors, defaultStyles } from "../../style/defaultStyles";
 // editor
-import {
-  Alert,
-  Image,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 // main
 import PagerView from "react-native-pager-view";
-import arrowBackIcon from "../../assets/arrow_back.png";
 import { router, useNavigation } from "expo-router";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { AddSongAsync, UpdateSongAsync } from "../../hooks/songList";
@@ -76,7 +68,7 @@ export default function SongEditor({ song = {} }) {
           <View style={styles.headerButtonsContainer}>
             <Pressable onPress={() => setIsChordEdition(!isChordEdition)}>
               <FontAwesome5
-                name="edit"
+                name={isChordEdition ? "edit" : "itunes-note"}
                 size={24}
                 color={colors.light.textPrimary}
               />
@@ -102,7 +94,7 @@ export default function SongEditor({ song = {} }) {
           </View>
         ),
       headerLeft: () => (
-        <ImgButton handler={handleGoBack} icon={arrowBackIcon} />
+        <ImgButton handler={handleGoBack} iconName={"arrow-left"} />
       ),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -292,15 +284,13 @@ export default function SongEditor({ song = {} }) {
     setSelectedLines([]);
     setIsSelectionMode(false);
   };
-  const ImgButton = ({ icon, handler }) => {
+  const ImgButton = ({ iconName, handler }) => {
     return (
       <Pressable onPress={handler}>
-        <Image
-          source={icon}
-          style={{
-            width: 24,
-            height: 24,
-          }}
+        <FontAwesome5
+          name={iconName}
+          size={24}
+          color={colors.light.textPrimary}
         />
       </Pressable>
     );
