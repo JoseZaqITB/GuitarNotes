@@ -1,27 +1,26 @@
 // info
-import { colors, defaultStyles } from "../style/defaultStyles";
+import { colors, defaultStyles } from "../../style/defaultStyles";
 // editor
 import {
+  Alert,
   Image,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   TextInput,
   View,
 } from "react-native";
 // main
 import PagerView from "react-native-pager-view";
-import arrowBackIcon from "../assets/arrow_back.png";
+import arrowBackIcon from "../../assets/arrow_back.png";
 import { router, useNavigation } from "expo-router";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { AddSongAsync, UpdateSongAsync } from "../hooks/songList";
-import MyText from "./MyText";
-import ChordEditor from "./ChordEditor";
-import ConfirmModal from "./ConfirmModal";
-import { getChords, storeChords } from "../stores/songStorage";
+import { useEffect, useReducer, useRef, useState } from "react";
+import { AddSongAsync, UpdateSongAsync } from "../../hooks/songList";
+import MyText from "../../components/MyText";
+import ChordEditor from "../../components/ChordEditor";
+import ConfirmModal from "../../components/ConfirmModal";
+import { getChords, storeChords } from "../../stores/songStorage";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { emptyChar, parseChordString } from "../hooks/useChordify";
 
 // or useReducer purposes
 function reducer(state, action) {
@@ -58,30 +57,18 @@ export default function SongEditor({ song = {} }) {
   const [state, dispatch] = useReducer(reducer, {
     undoStack: [],
     lyricLinesNChords: {
-      lyrics: song.lyrics?.split(/\n/) || [],
+      lyrics: song.lyrics || "",
       chords: song.chords || {},
     },
     redoStack: [],
   });
-  const [liveLyricLines, setLiveLyricLines] = useState(
-    song.lyrics?.split(/\n/) || [],
-  );
+  const [liveLyrics, setLiveLyrics] = useState(song.lyrics || "");
+  const [liveChords, setLiveChords] = useState(song.chords || {});
   const debounceTimer = useRef(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [isChordEdition, setIsChordEdition] = useState(false);
-  const [editableInput, setEditableInput] = useState(-1);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedLines, setSelectedLines] = useState({});
-  const chordString = useMemo(() => {
-    const emptyChordString = state.lyricLinesNChords.lyrics
-      .map((line) => emptyChar.repeat(line.length))
-      .join("\n");
-
-    return parseChordString(
-      state.lyricLinesNChords.chords,
-      emptyChordString,
-    ).split("\n");
-  }, [state.lyricLinesNChords]);
   // set a saveButton to the header and updated each time a state is updated
   useEffect(() => {
     navigation.setOptions({
@@ -136,7 +123,7 @@ export default function SongEditor({ song = {} }) {
     };
   }, []);
   useEffect(() => {
-    setLiveLyricLines(state.lyricLinesNChords.lyrics);
+    setLiveLyrics(state.lyricLinesNChords.lyrics);
   }, [state]);
   useEffect(() => {
     storeChords(state.lyricLinesNChords.chords);
@@ -146,16 +133,17 @@ export default function SongEditor({ song = {} }) {
     storeChords(chords);
     const newLyricsLinesNChords = { ...state.lyricLinesNChords };
     newLyricsLinesNChords.chords = chords;
+    setLiveChords(chords);
     dispatch({ type: "TYPE", payload: newLyricsLinesNChords });
   };
   const handleGoBack = () => {
     setShowBackPopUp(true);
   };
   const handleSaveSong = async () => {
-    const lyrics = state.lyricLinesNChords.lyrics.join("\n");
+    const lyrics = state.lyricLinesNChords.lyrics;
     // make sure all fields are filled
     if (!title.trim() || !lyrics.trim()) {
-      alert("Please fill at least title and lyrics");
+      Alert.Alert.alert("Please fill at least title and lyrics");
       return;
     }
     if (!artist.trim()) {
@@ -170,43 +158,79 @@ export default function SongEditor({ song = {} }) {
     if (song.id) {
       UpdateSongAsync(song.id, title, artist, lyrics, chords, tag)
         .then(() => {
-          alert(`Song Updated!\n${title}\n${artist}`);
+          Alert.alert(`Song Updated!\n${title}\n${artist}`);
           router.navigate("/", { relativeToDirectory: false });
         })
-        .catch((err) => alert(err));
+        .catch((err) => Alert.alert(err));
     } else {
       // save the song and show errors
       AddSongAsync(title, artist, lyrics, chords, tag)
         .then((song) => {
-          alert(`New Song Added!\n${song.title}\n${song.artist}`);
+          Alert.alert(`New Song Added!\n${song.title}\n${song.artist}`);
           router.navigate("/", { relativeToDirectory: false });
         })
-        .catch((err) => alert(err));
+        .catch((err) => Alert.alert(err));
     }
   };
-  const handleOnChangeText = (text, index) => {
-    const newLyrics = [...liveLyricLines];
-    newLyrics[index] = text.padEnd(liveLyricLines[index].length, " ");
-    setLiveLyricLines(newLyrics);
+  const handleOnChangeText = (text) => {
+    function updateChordsFromDiff(oldText, newText, oldChords) {
+      const updatedChords = {};
 
+      // Find the range where the change occurred
+      let start = 0;
+      while (
+        start < oldText.length &&
+        start < newText.length &&
+        oldText[start] === newText[start]
+      ) {
+        start++;
+      }
+
+      let endOld = oldText.length - 1;
+      let endNew = newText.length - 1;
+      while (
+        endOld >= start &&
+        endNew >= start &&
+        oldText[endOld] === newText[endNew]
+      ) {
+        endOld--;
+        endNew--;
+      }
+
+      const removedCount = endOld - start + 1;
+      const addedCount = endNew - start + 1;
+      const shift = addedCount - removedCount;
+
+      for (const [posStr, chord] of Object.entries(oldChords)) {
+        const pos = Number(posStr);
+
+        if (pos < start) {
+          // chord is before the edit — keep as is
+          updatedChords[pos] = chord;
+        } else if (pos > endOld) {
+          // chord is after the change — shift
+          updatedChords[pos + shift] = chord;
+        }
+        // Chords within the changed/deleted range are discarded
+      }
+      return updatedChords;
+    }
+    const newLyricLinesNChords = { ...state.lyricLinesNChords };
+    const oldText = liveLyrics;
+    const newText = text;
+    const newChords = updateChordsFromDiff(oldText, newText, liveChords);
+    // save changes
+    setLiveLyrics(text);
+    setLiveChords(newChords);
     // Debounce: reset timer
     // eslint-disable-next-line no-undef
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     // eslint-disable-next-line no-undef
     debounceTimer.current = setTimeout(() => {
-      const newLyricLinesNChords = { ...state.lyricLinesNChords };
-      newLyricLinesNChords.lyrics = newLyrics;
+      newLyricLinesNChords.chords = newChords;
+      newLyricLinesNChords.lyrics = text;
       dispatch({ type: "TYPE", payload: newLyricLinesNChords });
     }, 500); // 500ms delay before committing changes
-  };
-  const handleLongPress = (index) => {
-    setIsSelectionMode(true);
-    setSelectedLines((prev) => ({ ...prev, [index]: true }));
-  };
-  const handlePress = (index) => {
-    if (isSelectionMode)
-      setSelectedLines((prev) => ({ ...prev, [index]: true }));
-    else setEditableInput(index);
   };
   const handleDelete = (index) => {
     //
@@ -264,13 +288,6 @@ export default function SongEditor({ song = {} }) {
     );
     dispatch({ type: "TYPE", payload: newLyricLinesNChords });
     handleCancelSelection();
-  };
-  const handleUnselect = (index) => {
-    setSelectedLines((prev) => {
-      const updated = { ...prev };
-      delete updated[index];
-      return updated;
-    });
   };
   const handleCancelSelection = () => {
     setSelectedLines([]);
@@ -336,60 +353,21 @@ export default function SongEditor({ song = {} }) {
         </View>
         {isChordEdition ? (
           <ChordEditor
-            lyrics={liveLyricLines.join("\n")}
+            lyrics={liveLyrics}
             chords={state.lyricLinesNChords.chords}
             updateChords={handleUpdateChords}
           />
         ) : (
           <View style={styles.textEditionContainer}>
-            <ScrollView>
-              {liveLyricLines.map((line, lineIndex) => (
-                <Pressable
-                  key={lineIndex}
-                  onPress={() => handlePress(lineIndex)}
-                  onLongPress={() => handleLongPress(lineIndex)}
-                  style={
-                    isSelectionMode
-                      ? selectedLines[lineIndex]
-                        ? {
-                            ...styles.lineBtnSelection,
-                            ...styles.lineBtnSelected,
-                          }
-                        : styles.lineBtnSelection
-                      : styles.lineBtn
-                  }
-                >
-                  {editableInput === lineIndex && (
-                    <View style={styles.chordWrapper}>
-                      <MyText style={styles.chordText}>
-                        {chordString[lineIndex]}
-                      </MyText>
-                    </View>
-                  )}
-                  <TextInput
-                    value={line}
-                    style={
-                      editableInput === lineIndex
-                        ? { ...styles.textInput, ...styles.editableInput }
-                        : styles.textInput
-                    }
-                    onChangeText={(text) => {
-                      handleOnChangeText(text, lineIndex);
-                    }}
-                    multiline
-                    readOnly={editableInput !== lineIndex}
-                  />
-                  {isSelectionMode && selectedLines[lineIndex] && (
-                    <Pressable
-                      onPress={() => handleUnselect(lineIndex)}
-                      style={styles.timeIconBtn}
-                    >
-                      <FontAwesome5 name="times" size={16} color={"#900D09"} />
-                    </Pressable>
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
+            <TextInput
+              placeholder="A full fish soul with an empty song..."
+              value={liveLyrics}
+              style={styles.textInput}
+              onChangeText={(text) => {
+                handleOnChangeText(text);
+              }}
+              multiline
+            />
             <View style={styles.undoRedoContainer}>
               {isSelectionMode ? (
                 <>
@@ -479,7 +457,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
     paddingHorizontal: 8,
     fontFamily: "",
-    flexShrink: 1,
+    flex: 1,
   },
   editableInput: {
     fontFamily: monoSpaceFamily,

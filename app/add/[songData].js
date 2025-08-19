@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { GetListSongAsync } from "../../hooks/songList";
 import { useLocalSearchParams } from "expo-router";
-import SongEditor from "../../components/SongEditor";
 import { ActivityIndicator } from "react-native";
+import SongEditor from "./SongEditor";
 export default function UpdateSongView() {
   // vars
   const { songData } = useLocalSearchParams();

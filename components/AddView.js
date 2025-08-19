@@ -1,16 +1,13 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import createImg from "../assets/create.png";
-import importImg from "../assets/import.png";
 import { Link } from "expo-router";
 import { defaultStyles } from "../style/defaultStyles";
-import { useState } from "react";
 import ImportView from "./ImportView";
 
 export default function AddView() {
-  const [showImport, setShowImport] = useState(false);
   return (
     <View style={styles.mainContainer}>
-      <Link href="/add/CreateView" asChild>
+      <Link href="/add/SongEditor" asChild>
         <Pressable>
           <Image source={createImg} style={styles.image} />
           <Text style={title}>Create</Text>
