@@ -4,7 +4,7 @@ import { Fragment, useEffect, useState } from "react";
 import { GetListSongAsync } from "../hooks/songList";
 import { useFocusEffect } from "expo-router";
 
-export default function ListView({ gap }) {
+export default function ListView({ gap = 16 }) {
   const [songList, setSongList] = useState([]);
   useEffect(() => {
     GetListSongAsync()
@@ -34,7 +34,7 @@ export default function ListView({ gap }) {
             key={`${song.title} ${song.artist} ${index}`}
           />
           <View
-            style={{ height: gap ? gap : 16 }}
+            style={{ height: gap }}
             key={`spacer ${song.title} ${song.artist} ${index}`}
           />
         </Fragment>

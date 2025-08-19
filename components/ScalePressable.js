@@ -20,6 +20,7 @@ export default function ScalePressable({
 
   return (
     <Pressable
+      accessibilityRole="button"
       onPress={onPress}
       onPressIn={() => animateScale(scaleTo)}
       onPressOut={() => animateScale(1)}
