@@ -12,7 +12,8 @@
       "backgroundColor": "#009DF8"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zaquijobs.GuitarNotes"
     },
     "android": {
       "adaptiveIcon": {
