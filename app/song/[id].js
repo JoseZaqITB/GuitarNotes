@@ -287,8 +287,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
     marginHorizontal: 8,
-    flexDirection: "row",
-    flexWrap: "wrap",
   },
   lyricCharContainer: {
     margin: 0,
