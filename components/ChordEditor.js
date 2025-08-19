@@ -79,15 +79,6 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
     newStack: [],
     redoStack: [],
   });
-  const getChordPosByGroupPos = (groupIndex) => {
-    // get the chord part of group range ( the position of the next 3 chars from groupPosition)
-
-    for (let i = 0; i < 3; i++) {
-      const chord = groupPosition[groupIndex + i];
-      if (chord) return chord;
-    }
-    return -1;
-  };
   const handleSelection = (position) => {
     addChord(currentChord, position);
     dispatch({
@@ -117,6 +108,7 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
   // update chord string to storage when chord changes ( useful when save button is pressed)
   useEffect(() => {
     updateChords(_chords);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chordString, _chords]);
   useEffect(() => {
     const groupCharsBy3 = () => {
@@ -263,14 +255,6 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
 // styles
 const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // choose monospace font by OS
 const styles = StyleSheet.create({
-  lyricsAndChordContainer: {
-    marginTop: 20,
-    marginBottom: 10,
-    marginHorizontal: 8,
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  chordButton: {},
   lyricCharContainer: {
     margin: 0,
     padding: 0,
@@ -312,13 +296,6 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     margin: 16,
-  },
-  textInput: {
-    lineHeight: 48,
-    fontFamily: monoSpaceFamily,
-    ...defaultStyles.smallText,
-    color: colors.light.textPrimary,
-    textAlignVertical: "top",
   },
   undoRedoContainer: {
     alignSelf: "center",

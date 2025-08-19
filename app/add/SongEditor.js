@@ -4,7 +4,6 @@ import { colors, defaultStyles } from "../../style/defaultStyles";
 import {
   Alert,
   Image,
-  Platform,
   Pressable,
   StyleSheet,
   TextInput,
@@ -417,7 +416,6 @@ export default function SongEditor({ song = {} }) {
     </>
   );
 }
-const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // choose monospace font by OS
 
 const styles = StyleSheet.create({
   inputContainer: {
@@ -447,10 +445,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     ...defaultStyles.title,
   },
-  lyricsContainer: {
-    flex: 0.9,
-    paddingHorizontal: 8,
-  },
   textInput: {
     ...defaultStyles.middleText,
     color: colors.light.textPrimary,
@@ -458,10 +452,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     fontFamily: "",
     flex: 1,
-  },
-  editableInput: {
-    fontFamily: monoSpaceFamily,
-    paddingVertical: 8,
   },
   headerButtonsContainer: {
     flexDirection: "row",
@@ -478,36 +468,6 @@ const styles = StyleSheet.create({
   },
   textEditionContainer: {
     justifyContent: "space-between",
-  },
-  lineBtnSelection: {
-    borderTopWidth: 1,
-    borderColor: colors.light.secondary,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  lineBtnSelected: {
-    borderWidth: 1,
-    borderColor: "#900D09",
-  },
-  timeIconBtn: {
-    minWidth: "10%",
-    maxWidth: 32,
-    alignItems: "center",
-  },
-  lineBtn: {},
-  chordWrapper: {
-    position: "absolute",
-    top: -10,
-    left: 0,
-
-    paddingTop: 2,
-    margin: 0,
-  },
-  chordText: {
-    fontFamily: monoSpaceFamily,
-    ...defaultStyles.middleText,
-    color: colors.light.textSecondary,
   },
 });
 const titleStyle = StyleSheet.flatten(styles.title, styles.text);

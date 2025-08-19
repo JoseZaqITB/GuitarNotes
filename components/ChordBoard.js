@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
-import React, { useState } from "react";
+import { useState } from "react";
 import MyText from "./MyText";
 import { colors, defaultStyles } from "../style/defaultStyles";
 
@@ -127,15 +127,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexWrap: "wrap",
     borderTopWidth: 1,
-  },
-  lyricsContainer: {
-    flex: 0.9,
-    paddingHorizontal: 8,
-  },
-  textInput: {
-    ...defaultStyles.middleText,
-    color: colors.light.textPrimary,
-    textAlignVertical: "top",
-    minHeight: "100%", // right?. when no text, text keeps in size of container
   },
 });
