@@ -6,22 +6,19 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import MyText from "./MyText";
 import { colors, defaultStyles } from "../style/defaultStyles";
-import {
-  ALL_CHORDS_SHORT,
-  ALL_CHORDS_SHORT_BY_TYPE,
-  CHORD_TYPES_SHORT,
-  NOTES,
-} from "../utils/chords";
+import { ALL_CHORDS_SHORT_BY_TYPE, NOTES } from "../utils/chords";
 import { FontAwesome5 } from "@expo/vector-icons";
 
 export default function ChordBoard({ updateChord, currentChord }) {
   // vars
   const boardHeight = useRef(new Animated.Value(0)).current;
   const [showAllChords, setShowAllChords] = useState(false);
-  const displayedChords = NOTES.filter((note) => !note.includes("#")); // TEMP
+  const [displayedChords, setDisplayedChords] = useState(
+    NOTES.filter((note) => !note.includes("#")),
+  ); // TEMP)
   const screenHeight = useWindowDimensions().height;
   // animations
   const switchShowAllChords = () => {
@@ -35,6 +32,22 @@ export default function ChordBoard({ updateChord, currentChord }) {
     // update state
     setShowAllChords(!showAllChords);
   };
+  // handle press buttons
+  const [currentChordID, setCurrentChordID] = useState(null);
+  const handleChangeChord = (chord) => {
+    if (currentChordID != null) {
+      setDisplayedChords((displayedChords) => {
+        displayedChords[currentChordID] = chord;
+        return displayedChords;
+      });
+    }
+    updateChord(chord);
+  };
+
+  const handlePressChord = (chordID, chord) => {
+    setCurrentChordID(chordID);
+    updateChord(chord);
+  };
   return (
     <View>
       <View style={styles.headerContainer}>
@@ -44,7 +57,7 @@ export default function ChordBoard({ updateChord, currentChord }) {
               {
                 backgroundColor:
                   pressed || currentChord === "\u2007"
-                    ? colors.light.textSecondary
+                    ? "#900d09"
                     : "transparent",
               },
               styles.iconBtn,
@@ -61,7 +74,7 @@ export default function ChordBoard({ updateChord, currentChord }) {
           {displayedChords.map((value, index) => (
             <Pressable
               key={index + value}
-              onPress={() => updateChord(value)}
+              onPress={() => handlePressChord(index, value)}
               android_ripple
               style={({ pressed }) => [
                 {
@@ -104,7 +117,7 @@ export default function ChordBoard({ updateChord, currentChord }) {
                         },
                         styles.chordButton,
                       ]}
-                      onPress={() => updateChord(value)}
+                      onPress={() => handleChangeChord(value)}
                     >
                       <MyText style={styles.text}>{value}</MyText>
                     </Pressable>
@@ -166,7 +179,7 @@ const styles = StyleSheet.create({
     textTransform: "capitalize",
   },
   showChordsBtn: {
-    margin: "auto",
+    alignItems: "center",
   },
   chordTypeWrapper: {
     display: "flex",
