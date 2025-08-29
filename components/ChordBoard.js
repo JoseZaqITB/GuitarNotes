@@ -1,41 +1,63 @@
-import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
-import { useState } from "react";
+import {
+  Pressable,
+  StyleSheet,
+  View,
+  Animated,
+  ScrollView,
+  useWindowDimensions,
+} from "react-native";
+import React, { useMemo, useRef, useState } from "react";
 import MyText from "./MyText";
 import { colors, defaultStyles } from "../style/defaultStyles";
+import {
+  ALL_CHORDS_SHORT,
+  ALL_CHORDS_SHORT_BY_TYPE,
+  CHORD_TYPES_SHORT,
+  NOTES,
+} from "../utils/chords";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 export default function ChordBoard({ updateChord, currentChord }) {
+  // vars
+  const boardHeight = useRef(new Animated.Value(0)).current;
   const [showAllChords, setShowAllChords] = useState(false);
+  const displayedChords = NOTES.filter((note) => !note.includes("#")); // TEMP
+  const screenHeight = useWindowDimensions().height;
+  // animations
   const switchShowAllChords = () => {
+    // animate
+    Animated.timing(boardHeight, {
+      toValue: showAllChords ? 0 : screenHeight * 0.75,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start();
+    //openChordBoard();
+    // update state
     setShowAllChords(!showAllChords);
   };
-  const displayedChords = ["C", "D", "E", "F", "G", "A", "B"];
-  const allChords = [
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "A",
-    "B",
-    "Cm",
-    "Dm",
-    "Em",
-    "Fm",
-    "Gm",
-    "Am",
-    "Bm",
-  ];
-
   return (
     <View>
       <View style={styles.headerContainer}>
         <View style={styles.chordsContainer}>
-          <TouchableOpacity
-            style={styles.chordButton}
+          <Pressable
+            style={({ pressed }) => [
+              {
+                backgroundColor:
+                  pressed || currentChord === "\u2007"
+                    ? colors.light.textSecondary
+                    : "transparent",
+              },
+              styles.iconBtn,
+              styles.chordButton,
+            ]}
             onPress={() => updateChord("\u2007")}
           >
-            <MyText style={styles.text}>🚫</MyText>
-          </TouchableOpacity>
+            <FontAwesome5
+              name={"eraser"}
+              size={16}
+              color={colors.light.textPrimary}
+            />
+          </Pressable>
           {displayedChords.map((value, index) => (
             <Pressable
               key={index + value}
@@ -57,35 +79,50 @@ export default function ChordBoard({ updateChord, currentChord }) {
         </View>
       </View>
       <View>
-        <View style={styles.allChordsContainer}>
-          {showAllChords &&
-            allChords.map((value, index) => (
-              <Pressable
-                key={index + value}
-                style={({ pressed }) => [
-                  {
-                    backgroundColor:
-                      pressed || currentChord === value
-                        ? colors.light.textSecondary
-                        : "transparent",
-                  },
-                  styles.chordButton,
-                ]}
-                onPress={() => updateChord(value)}
-              >
-                <MyText style={styles.text}>{value}</MyText>
-              </Pressable>
+        <Animated.View
+          style={{
+            ...styles.allChordsContainer,
+            height: boardHeight,
+            maxHeight: screenHeight * 0.75,
+            borderBottomWidth: showAllChords ? 2 : 0,
+          }}
+        >
+          <ScrollView>
+            {Object.entries(ALL_CHORDS_SHORT_BY_TYPE).map(([type, chords]) => (
+              <View style={styles.chordTypeWrapper} key={type + chords}>
+                <MyText style={styles.chordTypeLabel}>{type}</MyText>
+                <View style={styles.chordWrapper}>
+                  {chords.map((value, index) => (
+                    <Pressable
+                      key={index + value}
+                      style={({ pressed }) => [
+                        {
+                          backgroundColor:
+                            pressed || currentChord === value
+                              ? colors.light.primary
+                              : "transparent",
+                        },
+                        styles.chordButton,
+                      ]}
+                      onPress={() => updateChord(value)}
+                    >
+                      <MyText style={styles.text}>{value}</MyText>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
             ))}
-        </View>
-        <Pressable onPress={() => switchShowAllChords()}>
-          <MyText
-            style={{
-              ...styles.text,
-              textAlign: "center",
-            }}
-          >
-            {showAllChords ? "^" : "v"}
-          </MyText>
+          </ScrollView>
+        </Animated.View>
+        <Pressable
+          onPress={() => switchShowAllChords()}
+          style={styles.showChordsBtn}
+        >
+          <FontAwesome5
+            name={showAllChords ? "caret-up" : "caret-down"}
+            size={24}
+            color={colors.light.textPrimary}
+          />
         </Pressable>
       </View>
     </View>
@@ -108,8 +145,8 @@ const styles = StyleSheet.create({
   },
 
   chordButton: {
-    width: buttonSize,
-    height: buttonSize,
+    minWidth: buttonSize,
+    minHeight: buttonSize,
     marginHorizontal: 2,
     marginVertical: 2,
     borderRadius: 4,
@@ -120,12 +157,32 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   allChordsContainer: {
+    borderTopWidth: 2,
+    borderColor: colors.light.textSecondary,
+    backgroundColor: colors.light.textSecondary,
+  },
+  chordTypeLabel: {
+    ...defaultStyles.middleText,
+    textTransform: "capitalize",
+  },
+  showChordsBtn: {
+    margin: "auto",
+  },
+  chordTypeWrapper: {
     display: "flex",
     flexDirection: "row",
-    maxWidth: (buttonSize + 16) * 6,
-    margin: "auto",
-    justifyContent: "center",
     flexWrap: "wrap",
-    borderTopWidth: 1,
+    padding: 8,
+  },
+  chordWrapper: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  iconBtn: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
