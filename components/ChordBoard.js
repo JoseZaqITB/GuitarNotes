@@ -6,19 +6,21 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import MyText from "./MyText";
 import { colors, defaultStyles } from "../style/defaultStyles";
 import { ALL_CHORDS_SHORT_BY_TYPE, NOTES } from "../utils/chords";
 import { FontAwesome5 } from "@expo/vector-icons";
+import {
+  getCurrentChordList,
+  storeCurrentChordList,
+} from "../stores/songStorage";
 
 export default function ChordBoard({ updateChord, currentChord }) {
   // vars
   const boardHeight = useRef(new Animated.Value(0)).current;
   const [showAllChords, setShowAllChords] = useState(false);
-  const [displayedChords, setDisplayedChords] = useState(
-    NOTES.filter((note) => !note.includes("#")),
-  ); // TEMP)
+  const [displayedChords, setDisplayedChords] = useState([]); // TEMP
   const screenHeight = useWindowDimensions().height;
   // animations
   const switchShowAllChords = () => {
@@ -38,6 +40,7 @@ export default function ChordBoard({ updateChord, currentChord }) {
     if (currentChordID != null) {
       setDisplayedChords((displayedChords) => {
         displayedChords[currentChordID] = chord;
+        storeCurrentChordList(displayedChords);
         return displayedChords;
       });
     }
@@ -48,6 +51,15 @@ export default function ChordBoard({ updateChord, currentChord }) {
     setCurrentChordID(chordID);
     updateChord(chord);
   };
+
+  // init displayed chords
+  useEffect(() => {
+    const getDisplayedChordList = async () => {
+      const currentChordList = await getCurrentChordList();
+      setDisplayedChords(currentChordList);
+    };
+    getDisplayedChordList();
+  }, []);
   return (
     <View>
       <View style={styles.headerContainer}>
