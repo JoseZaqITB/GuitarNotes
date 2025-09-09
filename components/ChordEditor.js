@@ -80,11 +80,28 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
     redoStack: [],
   });
   const handleSelection = (position) => {
-    addChord(currentChord, position);
+    let oldChord = "";
+    if (
+      !_chords[position] &&
+      !_chords[position + 1] &&
+      !_chords[position + 2]
+    ) {
+      addChord(currentChord, position);
+      oldChord = getChordbyPosition(position);
+    } else if (_chords[position]) {
+      addChord(currentChord, position);
+      oldChord = getChordbyPosition(position);
+    } else if (_chords[position + 1]) {
+      addChord(currentChord, position + 1);
+      oldChord = getChordbyPosition(position + 1);
+    } else if (_chords[position + 2]) {
+      addChord(currentChord, position + 2);
+      oldChord = getChordbyPosition(position + 2);
+    }
     dispatch({
       type: "TAP",
       payload: {
-        oldChord: getChordbyPosition(position),
+        oldChord: oldChord,
         newChord: currentChord,
         position,
       },
@@ -140,6 +157,7 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
       });
       return splitText;
     };
+
     setSplitLyrics(groupCharsBy3());
   }, [lyrics]);
 
@@ -251,7 +269,6 @@ export default function ChordEditor({ lyrics, chords, updateChords }) {
     </>
   );
 }
-
 // styles
 const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // choose monospace font by OS
 const styles = StyleSheet.create({

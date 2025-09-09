@@ -9,7 +9,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import MyText from "./MyText";
 import { colors, defaultStyles } from "../style/defaultStyles";
-import { ALL_CHORDS_SHORT_BY_TYPE, NOTES } from "../utils/chords";
+import { ALL_CHORDS_SHORT_BY_TYPE } from "../utils/chords";
 import { FontAwesome5 } from "@expo/vector-icons";
 import {
   getCurrentChordList,
