@@ -32,4 +32,36 @@ for (let i = 0; i < NOTES.length; i++) {
     else ALL_CHORDS_SHORT_BY_TYPE[chordType] = [name];
   }
 }
-export { CHORD_TYPES_SHORT, NOTES, ALL_CHORDS_SHORT, ALL_CHORDS_SHORT_BY_TYPE };
+
+function transposeChord(chord, steps) {
+  // Match root note (with optional sharp) + rest of chord
+  const match = chord.match(/^([A-G]#?)(.*)$/);
+  if (!match) return chord; // fallback if no match
+
+  const [, root, suffix] = match;
+
+  // Find index of root note
+  const rootIndex = NOTES.indexOf(root);
+  if (rootIndex === -1) return chord; // not a valid note
+
+  // Transpose
+  const newIndex = (rootIndex + steps + NOTES.length) % NOTES.length;
+  const newRoot = NOTES[newIndex];
+
+  return newRoot + suffix;
+}
+
+function transposeSong(song, steps) {
+  const newChords = {};
+  for (const [pos, chord] of Object.entries(song)) {
+    newChords[pos] = transposeChord(chord, steps);
+  }
+  return newChords;
+}
+export {
+  CHORD_TYPES_SHORT,
+  NOTES,
+  ALL_CHORDS_SHORT,
+  ALL_CHORDS_SHORT_BY_TYPE,
+  transposeSong,
+};

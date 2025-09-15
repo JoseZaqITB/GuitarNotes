@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Animated,
   Image,
   Platform,
@@ -15,14 +16,15 @@ import React, { useEffect, useRef, useState } from "react";
 import ConfigModal from "../../components/ConfigModal";
 import { colors, defaultStyles } from "../../style/defaultStyles";
 import useSongList from "../../hooks/songList";
+import { transposeSong } from "../../utils/chords";
 
 export default function SongView() {
   // vars
   const scrollViewRef = React.useRef(0);
-  const { id } = useLocalSearchParams();
-  const songId = id;
+  const { id: songId } = useLocalSearchParams();
   const songList = useSongList();
-  const [song, setSong] = useState("");
+  const [song, setSong] = useState(null);
+  const [chords, setChords] = useState(null);
   const [currentBtn, setCurrentBtn] = useState("none");
   let chordIndex = -2; //  -1 per \n space and -1 per char
   // use states for scrolling
@@ -36,6 +38,20 @@ export default function SongView() {
   // define the distance to scroll
   const scrollDistance =
     lyricSize > scrollViewHeight ? lyricSize - scrollViewHeight : lyricSize;
+  /**
+   * Picker: change tone
+   */
+  const [selectedTone, setSelectedTone] = useState(0);
+
+  useEffect(() => {
+    if (song) {
+      console.log(song.chords);
+      console.log(transposeSong(song.chords, selectedTone));
+      const transposedSong = transposeSong(song.chords, selectedTone);
+      setChords(transposedSong);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTone]);
   // functions for scrolling
   const handleButton = (btnName) => {
     switch (btnName) {
@@ -100,9 +116,13 @@ export default function SongView() {
   // initialize song
   useEffect(() => {
     if (songList.data) {
-      songList.findSong(songId).then((song) => setSong(song));
+      songList.findSong(songId).then((song) => {
+        setSong(song);
+        setChords(song?.chords);
+      });
     }
-  }, [songList, songId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     // update distance to scroll
     // when unomunts clean all listeners
@@ -112,7 +132,14 @@ export default function SongView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollViewHeight, lyricSize]);
 
-  if (typeof song === "undefined") return <></>;
+  if (!song || !chords)
+    return (
+      <ActivityIndicator
+        size="large"
+        color={colors.light.primary}
+        style={{ flex: 1 }}
+      />
+    );
   return (
     <>
       <ScrollView
@@ -149,7 +176,7 @@ export default function SongView() {
                       >
                         {word.split("").map((char) => {
                           chordIndex++;
-                          if (song?.chords[chordIndex])
+                          if (chords[chordIndex])
                             return (
                               <View
                                 style={styles.lyricCharContainer}
@@ -158,7 +185,7 @@ export default function SongView() {
                                 <MyText style={styles.lyricText}>{char}</MyText>
                                 <View style={styles.chordWrapper}>
                                   <MyText style={styles.chordText}>
-                                    {song?.chords[chordIndex]}
+                                    {chords[chordIndex]}
                                   </MyText>
                                 </View>
                               </View>
@@ -186,10 +213,10 @@ export default function SongView() {
                                 <MyText style={styles.lyricText}>
                                   {"\u00A0"}
                                 </MyText>
-                                {song?.chords[chordIndex] && (
+                                {chords[chordIndex] && (
                                   <View style={styles.chordWrapper}>
                                     <MyText style={styles.chordText}>
-                                      {song?.chords[chordIndex]}
+                                      {chords[chordIndex]}
                                     </MyText>
                                   </View>
                                 )}
@@ -240,9 +267,11 @@ export default function SongView() {
 
       <ConfigModal
         visible={showConfigMenu}
-        id={song.id}
+        id={song?.id}
         scrollDuration={scrollDuration}
         setScrollDuration={setScrollDuration}
+        selectedTone={selectedTone}
+        setSelectedTone={setSelectedTone}
         onClose={() => handleButton("settings")}
       />
     </>
@@ -250,6 +279,7 @@ export default function SongView() {
 }
 
 const monoSpaceFamily = Platform.OS === "android" ? "monospace" : "courier"; // choose monospace font by OS
+
 const styles = StyleSheet.create({
   headerContainer: {
     borderBottomWidth: StyleSheet.hairlineWidth,

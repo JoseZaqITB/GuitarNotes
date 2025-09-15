@@ -1,9 +1,4 @@
-import {
-  Modal,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import { Modal, Pressable, StyleSheet, View } from "react-native";
 import MyText from "./MyText";
 import Slider from "@react-native-community/slider";
 import { useRouter } from "expo-router";
@@ -13,12 +8,15 @@ import { DeleteSongByidAsync } from "../hooks/songList";
 import { colors, defaultStyles } from "../style/defaultStyles";
 import ScalePressable from "./ScalePressable";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 
 export default function ConfigModal({
   id,
   scrollDuration,
   setScrollDuration,
   onClose,
+  selectedTone,
+  setSelectedTone,
   visible,
 }) {
   const minValue = 1000; // 1 second
@@ -27,6 +25,9 @@ export default function ConfigModal({
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
 
+  /**
+   * functions
+   */
   const handlePress = () => {
     onClose();
     router.push(`/add/${id}`);
@@ -47,20 +48,44 @@ export default function ConfigModal({
       visible={visible}
       onRequestClose={onClose} // Ha  ndle back button on Android
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
+      <View style={{ flex: 1 }}>
+        <Pressable style={styles.overlay} onPress={onClose}>
           <View style={styles.dialogBox}>
             <View
               style={{
                 flex: 1,
               }}
             >
-              {/* <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <MyText>Key </MyText>
-            <Pressable>
-              <MyText>G</MyText>
-            </Pressable>
-          </View> */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <MyText style={styles.sectionTitle}>Key </MyText>
+                <Pressable style={{ flex: 0.6 }}>
+                  <Picker
+                    style={{
+                      width: "100%",
+                      borderWidth: 10,
+                      backgroundColor: colors.light.secondary,
+                    }}
+                    selectedValue={selectedTone}
+                    mode="dropdown"
+                    onValueChange={(value) => setSelectedTone(value)}
+                  >
+                    {Array(11)
+                      .fill(0, 0, 11)
+                      .map((value, index) => (
+                        <Picker.Item
+                          key={value + index}
+                          label={`${index - 5} tone/s`}
+                          value={index - 5}
+                        />
+                      ))}
+                  </Picker>
+                </Pressable>
+              </View>
               <View
                 style={{
                   flexDirection: "row",
@@ -109,8 +134,8 @@ export default function ConfigModal({
             onConfirm={handleDeleteSong}
             onCancel={() => setModalVisible(false)}
           />
-        </View>
-      </TouchableWithoutFeedback>
+        </Pressable>
+      </View>
     </Modal>
   );
 }
@@ -131,6 +156,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     padding: 36,
+    elevation: 0,
   },
   dialogBox: {
     flexDirection: "row",
