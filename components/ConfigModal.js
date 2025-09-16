@@ -8,7 +8,6 @@ import { DeleteSongByidAsync } from "../hooks/songList";
 import { colors, defaultStyles } from "../style/defaultStyles";
 import ScalePressable from "./ScalePressable";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
 
 export default function ConfigModal({
   id,
@@ -41,6 +40,14 @@ export default function ConfigModal({
     const realValue = maxValue - value + minValue;
     setScrollDuration(realValue);
   };
+
+  const getFrac = (decimal) => {
+    if (Number.isInteger(decimal / 2)) {
+      if (decimal > 0) return `+${decimal / 2}`;
+      return decimal / 2;
+    } else if (decimal > 0) return ` +${Math.round(decimal / 2)}/2 `;
+    else return ` ${Math.floor(decimal / 2)}/2 `;
+  };
   return (
     <Modal
       transparent={true}
@@ -63,17 +70,31 @@ export default function ConfigModal({
                 }}
               >
                 <MyText style={styles.sectionTitle}>Key </MyText>
-                <Pressable onPress={() => setSelectedTone((prev) => prev + 1)}>
-                  <MyText>+</MyText>
-                </Pressable>
-                <MyText>
-                  {Number.isInteger(selectedTone / 2)
-                    ? selectedTone / 2
-                    : ` ${Math.round(selectedTone / 2)}/2 `}
-                </MyText>
-                <Pressable onPress={() => setSelectedTone((prev) => prev - 1)}>
-                  <MyText>-</MyText>
-                </Pressable>
+                <View style={styles.toneWrapper}>
+                  <ScalePressable
+                    style={styles.toneBtn}
+                    onPress={() => setSelectedTone((prev) => prev - 1)}
+                  >
+                    <FontAwesome5
+                      name={"minus-circle"}
+                      size={24}
+                      color={colors.light.textPrimary}
+                    />
+                  </ScalePressable>
+                  <MyText style={styles.toneText}>
+                    {getFrac(selectedTone)}
+                  </MyText>
+                  <ScalePressable
+                    style={styles.toneBtn}
+                    onPress={() => setSelectedTone((prev) => prev + 1)}
+                  >
+                    <FontAwesome5
+                      name={"plus-circle"}
+                      size={24}
+                      color={colors.light.textPrimary}
+                    />
+                  </ScalePressable>
+                </View>
               </View>
               <View
                 style={{
@@ -167,6 +188,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
+    marginHorizontal: 16,
+  },
+  toneText: {
+    alignSelf: "center",
+    textAlign: "center",
+    minWidth: 36,
+  },
+  toneWrapper: {
+    display: "flex",
+    flexDirection: "row",
     marginHorizontal: 16,
   },
 });
