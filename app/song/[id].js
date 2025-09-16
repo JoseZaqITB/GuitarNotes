@@ -17,6 +17,8 @@ import ConfigModal from "../../components/ConfigModal";
 import { colors, defaultStyles } from "../../style/defaultStyles";
 import useSongList from "../../hooks/songList";
 import { transposeSong } from "../../utils/chords";
+import { FontAwesome5 } from "@expo/vector-icons";
+import ScalePressable from "../../components/ScalePressable";
 
 export default function SongView() {
   // vars
@@ -231,36 +233,40 @@ export default function SongView() {
         </View>
       </ScrollView>
       <View style={styles.floatingBtnContainer}>
-        <Pressable
-          style={{
-            backgroundColor:
-              currentBtn === "settings"
-                ? colors.light.textSecondary
-                : undefined,
-            borderRadius: 14,
-            elevation: 8,
-            margin: 8,
-            padding: 4,
-          }}
+        <ScalePressable
+          style={
+            currentBtn === "settings"
+              ? [
+                  styles.floatingBtn,
+                  { backgroundColor: colors.light.textSecondary },
+                ]
+              : styles.floatingBtn
+          }
           onPress={() => handleButton("settings")}
         >
-          <Image style={styles.floatingBtn} source={confIcon} />
-        </Pressable>
-        <Pressable
-          style={{
-            backgroundColor:
-              currentBtn === "autoscroll"
-                ? colors.light.textSecondary
-                : undefined,
-            borderRadius: 14,
-            elevation: 8,
-            margin: 8,
-            padding: 4,
-          }}
+          <FontAwesome5
+            name={"cog"}
+            size={24}
+            color={colors.light.textPrimary}
+          />
+        </ScalePressable>
+        <ScalePressable
+          style={
+            currentBtn === "autoscroll"
+              ? [
+                  styles.floatingBtn,
+                  { backgroundColor: colors.light.textSecondary },
+                ]
+              : styles.floatingBtn
+          }
           onPress={() => handleButton("autoscroll")}
         >
-          <Image style={styles.floatingBtn} source={arrowIcon} />
-        </Pressable>
+          <FontAwesome5
+            name={"arrow-down"}
+            size={24}
+            color={colors.light.textPrimary}
+          />
+        </ScalePressable>
       </View>
 
       <ConfigModal
@@ -331,8 +337,12 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   floatingBtn: {
-    width: 24,
-    height: 24,
+    backgroundColor: undefined,
+    borderRadius: 14,
+    elevation: 16,
+    margin: 8,
+    padding: 4,
+    alignItems: "center",
   },
   floatingBtnContainer: {
     position: "absolute",
