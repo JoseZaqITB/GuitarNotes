@@ -22,7 +22,7 @@ export default function SongView() {
   // vars
   const scrollViewRef = React.useRef(0);
   const { id: songId } = useLocalSearchParams();
-  const songList = useSongList();
+  const { findSong, loading } = useSongList();
   const [song, setSong] = useState(null);
   const [chords, setChords] = useState(null);
   const [currentBtn, setCurrentBtn] = useState("none");
@@ -45,8 +45,6 @@ export default function SongView() {
 
   useEffect(() => {
     if (song) {
-      console.log(song.chords);
-      console.log(transposeSong(song.chords, selectedTone));
       const transposedSong = transposeSong(song.chords, selectedTone);
       setChords(transposedSong);
     }
@@ -115,14 +113,13 @@ export default function SongView() {
   }, [autoscroll]);
   // initialize song
   useEffect(() => {
-    if (songList.data) {
-      songList.findSong(songId).then((song) => {
-        setSong(song);
-        setChords(song?.chords);
-      });
+    if (!loading) {
+      const newSong = findSong(songId);
+      setSong(newSong);
+      setChords(newSong?.chords);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loading]);
   useEffect(() => {
     // update distance to scroll
     // when unomunts clean all listeners
@@ -132,14 +129,15 @@ export default function SongView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollViewHeight, lyricSize]);
 
-  if (!song || !chords)
+  if (loading)
     return (
       <ActivityIndicator
         size="large"
-        color={colors.light.primary}
+        color={colors.light.textPrimary}
         style={{ flex: 1 }}
       />
     );
+
   return (
     <>
       <ScrollView

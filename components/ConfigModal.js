@@ -63,27 +63,16 @@ export default function ConfigModal({
                 }}
               >
                 <MyText style={styles.sectionTitle}>Key </MyText>
-                <Pressable style={{ flex: 0.6 }}>
-                  <Picker
-                    style={{
-                      width: "100%",
-                      borderWidth: 10,
-                      backgroundColor: colors.light.secondary,
-                    }}
-                    selectedValue={selectedTone}
-                    mode="dropdown"
-                    onValueChange={(value) => setSelectedTone(value)}
-                  >
-                    {Array(11)
-                      .fill(0, 0, 11)
-                      .map((value, index) => (
-                        <Picker.Item
-                          key={value + index}
-                          label={`${index - 5} tone/s`}
-                          value={index - 5}
-                        />
-                      ))}
-                  </Picker>
+                <Pressable onPress={() => setSelectedTone((prev) => prev + 1)}>
+                  <MyText>+</MyText>
+                </Pressable>
+                <MyText>
+                  {Number.isInteger(selectedTone / 2)
+                    ? selectedTone / 2
+                    : ` ${Math.round(selectedTone / 2)}/2 `}
+                </MyText>
+                <Pressable onPress={() => setSelectedTone((prev) => prev - 1)}>
+                  <MyText>-</MyText>
                 </Pressable>
               </View>
               <View

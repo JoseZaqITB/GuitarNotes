@@ -15,19 +15,19 @@ const useSongList = () => {
       let listSong = [];
       try {
         listSong = await GetListSongAsync();
+        setData(listSong);
       } catch (err) {
         console.log(err);
         setError(err);
       } finally {
         setLoading(false);
       }
-      setData(listSong);
     };
 
     readFile();
   }, []);
   // functions
-  async function findSong(songId) {
+  function findSong(songId) {
     if (data) {
       return data.find((song) => song.id.toString() === songId);
     }
