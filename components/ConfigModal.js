@@ -20,7 +20,6 @@ export default function ConfigModal({
 }) {
   const minValue = 1000; // 1 second
   const maxValue = 1000 * 60 * 8; // 8 minutes
-  const reversedValue = maxValue - scrollDuration + minValue; // Reverse the value so left = max, right = min
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
 
@@ -37,7 +36,7 @@ export default function ConfigModal({
     router.navigate("/");
   };
   const handleValueChange = (value) => {
-    const realValue = maxValue - value + minValue;
+    const realValue = value;
     setScrollDuration(realValue);
   };
 
@@ -120,11 +119,11 @@ export default function ConfigModal({
                 </View>
               </View>
               <View style={{ marginVertical: 4 }}>
-                <MyText style={styles.sectionTitle}>Autoscroll speed </MyText>
+                <MyText style={styles.sectionTitle}>Autoscroll Duration</MyText>
                 <View style={styles.sliderWrapper}>
                   <Slider
                     step={1000}
-                    value={reversedValue}
+                    value={scrollDuration}
                     minimumValue={minValue} // milliseconds
                     maximumValue={maxValue} // millisecons * seconds * minutes
                     minimumTrackTintColor="#FFFFFF"
@@ -193,7 +192,7 @@ const styles = StyleSheet.create({
   toneText: {
     alignSelf: "center",
     textAlign: "center",
-    minWidth: 36,
+    minWidth: 48,
   },
   toneWrapper: {
     display: "flex",
