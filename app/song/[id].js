@@ -1,16 +1,12 @@
 import {
   ActivityIndicator,
   Animated,
-  Image,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import confIcon from "../../assets/conf.png";
-import arrowIcon from "../../assets/arrow.png";
 import MyText from "../../components/MyText";
 import React, { useEffect, useRef, useState } from "react";
 import ConfigModal from "../../components/ConfigModal";
